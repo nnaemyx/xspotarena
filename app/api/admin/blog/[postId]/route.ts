@@ -3,16 +3,10 @@ import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import slugify from "slugify";
 
-type Props = {
-  params: {
-    postId: string;
-  };
-};
-
 // GET /api/admin/blog/[postId]
 export async function GET(
   request: Request,
-  { params }: Props
+  { params }: { params: { postId: string } }
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -55,7 +49,7 @@ export async function GET(
 // PUT /api/admin/blog/[postId]
 export async function PUT(
   request: Request,
-  { params }: Props
+  { params }: { params: { postId: string } }
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -111,7 +105,7 @@ export async function PUT(
 // DELETE /api/admin/blog/[postId]
 export async function DELETE(
   request: Request,
-  { params }: Props
+  { params }: { params: { postId: string } }
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -147,7 +141,7 @@ export async function DELETE(
 // PATCH /api/admin/blog/[postId]
 export async function PATCH(
   request: Request,
-  { params }: Props
+  { params }: { params: { postId: string } }
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
