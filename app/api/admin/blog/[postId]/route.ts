@@ -3,10 +3,16 @@ import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import slugify from "slugify";
 
+type Props = {
+  params: {
+    postId: string;
+  };
+};
+
 // GET /api/admin/blog/[postId]
 export async function GET(
   request: Request,
-  context: { params: { postId: string } }
+  { params }: Props
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -26,7 +32,7 @@ export async function GET(
     }
 
     const post = await prisma.blogPost.findUnique({
-      where: { id: context.params.postId },
+      where: { id: params.postId },
     });
 
     if (!post) {
@@ -49,7 +55,7 @@ export async function GET(
 // PUT /api/admin/blog/[postId]
 export async function PUT(
   request: Request,
-  context: { params: { postId: string } }
+  { params }: Props
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -82,7 +88,7 @@ export async function PUT(
     const excerpt = content.substring(0, 150) + "...";
 
     const post = await prisma.blogPost.update({
-      where: { id: context.params.postId },
+      where: { id: params.postId },
       data: {
         title,
         slug,
@@ -105,7 +111,7 @@ export async function PUT(
 // DELETE /api/admin/blog/[postId]
 export async function DELETE(
   request: Request,
-  context: { params: { postId: string } }
+  { params }: Props
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -125,7 +131,7 @@ export async function DELETE(
     }
 
     await prisma.blogPost.delete({
-      where: { id: context.params.postId },
+      where: { id: params.postId },
     });
 
     return new NextResponse(null, { status: 204 });
@@ -141,7 +147,7 @@ export async function DELETE(
 // PATCH /api/admin/blog/[postId]
 export async function PATCH(
   request: Request,
-  context: { params: { postId: string } }
+  { params }: Props
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -171,7 +177,7 @@ export async function PATCH(
     }
 
     const post = await prisma.blogPost.update({
-      where: { id: context.params.postId },
+      where: { id: params.postId },
       data: { published },
     });
 
