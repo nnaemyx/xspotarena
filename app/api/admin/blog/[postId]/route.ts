@@ -3,16 +3,13 @@ import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import slugify from "slugify";
 
-interface RouteParams {
-  params: {
-    postId: string;
-  };
-}
-
 // GET /api/admin/blog/[postId]
-export async function GET(req: Request, { params }: RouteParams) {
+export async function GET(
+  request: Request,
+  { params }: { params: { postId: string } }
+) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -50,9 +47,12 @@ export async function GET(req: Request, { params }: RouteParams) {
 }
 
 // PUT /api/admin/blog/[postId]
-export async function PUT(req: Request, { params }: RouteParams) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { postId: string } }
+) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -68,7 +68,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
       );
     }
 
-    const body = await req.json();
+    const body = await request.json();
     const { title, content, image } = body;
 
     if (!title || !content || !image) {
@@ -103,9 +103,12 @@ export async function PUT(req: Request, { params }: RouteParams) {
 }
 
 // DELETE /api/admin/blog/[postId]
-export async function DELETE(req: Request, { params }: RouteParams) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { postId: string } }
+) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -136,9 +139,12 @@ export async function DELETE(req: Request, { params }: RouteParams) {
 }
 
 // PATCH /api/admin/blog/[postId]
-export async function PATCH(req: Request, { params }: RouteParams) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: { postId: string } }
+) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -154,7 +160,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
       );
     }
 
-    const body = await req.json();
+    const body = await request.json();
     const { published } = body;
 
     if (typeof published !== "boolean") {
