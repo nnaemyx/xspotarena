@@ -138,8 +138,7 @@ export default function CartPage() {
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 10 : 0;
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   const handleCheckout = async () => {
     try {
@@ -199,7 +198,7 @@ export default function CartPage() {
                   <div className="flex-grow">
                     <h3 className="font-semibold">{item.product.name}</h3>
                     <p className="text-sm text-gray-600">Size: {item.size}</p>
-                    <p className="text-sm text-gray-600">${item.product.price}</p>
+                    <p className="text-sm text-gray-600">₦{item.product.price.toLocaleString()}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Button
                         variant="outline"
@@ -236,16 +235,12 @@ export default function CartPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
+                  <span>₦{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between font-semibold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₦{total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

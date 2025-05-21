@@ -49,15 +49,15 @@ export default function Hero() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/products" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-white text-black">
+                <Button size="lg" className="w-[200px] md:w-auto bg-white text-black">
                   Shop Now
                 </Button>
               </Link>
-              <Link href="/custom-jersey" className="w-full sm:w-auto">
+              {/* <Link href="/custom-jersey" className="w-full sm:w-auto hidden md:block">
                 <Button size="lg" variant="outline" className="w-full border-white text-[#FFD700] bg-black hover:bg-white hover:text-gray-900">
                   Design Your Jersey
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>

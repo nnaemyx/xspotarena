@@ -67,7 +67,7 @@ export async function POST(
       amount: Math.round(order.total * 100), // Convert to kobo/cents
       email: order.shippingAddress.email,
       currency: "NGN",
-      callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payments/verify/${order.id}`,
+      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders/success?orderId=${order.id}`,
       reference: `ORDER-${order.id}-${Date.now()}`,
       metadata: {
         order_id: order.id,

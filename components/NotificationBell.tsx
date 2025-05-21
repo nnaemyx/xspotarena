@@ -43,7 +43,7 @@ export default function NotificationBell() {
                     <div
                       key={notification.id}
                       className={`rounded-lg p-3 ${
-                        notification.isRead
+                        notification.read
                           ? "bg-gray-50"
                           : "bg-blue-50"
                       }`}

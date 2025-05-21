@@ -18,7 +18,7 @@ export async function initializePayment(
       body: JSON.stringify({
         amount: amount * 100, // Convert to kobo
         email,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/verify/${orderId}`,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders/success?orderId=${orderId}`,
         metadata: {
           order_id: orderId,
         },

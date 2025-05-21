@@ -4,11 +4,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ orderId: string }> }
+  { params }: { params: { orderId: string } }
 ) {
   try {
-    const { orderId } = await params;
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const { orderId } = params;
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -55,11 +55,11 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ orderId: string }> }
+  { params }: { params: { orderId: string } }
 ) {
   try {
-    const { orderId } = await params;
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const { orderId } = params;
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -93,6 +93,7 @@ export async function PATCH(
     if (status === "COMPLETED") {
       await prisma.notification.create({
         data: {
+          title: "Order Completed",
           message: `Your order #${order.id} has been completed`,
           type: "ORDER",
           userId: order.userId

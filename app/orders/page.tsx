@@ -10,6 +10,16 @@ interface Order {
   id: string;
   status: string;
   createdAt: string;
+  total: number;
+  items: {
+    product: {
+      name: string;
+      price: number;
+      images: string[];
+    };
+    quantity: number;
+    size: string;
+  }[];
   customJersey?: {
     designDescription: string;
     size: string;
@@ -111,6 +121,34 @@ export default function OrdersPage() {
                       Placed on {new Date(order.createdAt).toLocaleDateString()}
                     </span>
                   </div>
+
+                  {order.items && order.items.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Order Items</h3>
+                      {order.items.map((item, index) => (
+                        <div key={index} className="flex items-center gap-4">
+                          <img
+                            src={item.product.images[0] || "/placeholder.png"}
+                            alt={item.product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-medium">{item.product.name}</p>
+                            <p className="text-sm text-gray-500">
+                              Size: {item.size} | Quantity: {item.quantity}
+                            </p>
+                            <p className="text-sm">₦{(item.product.price * item.quantity).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="border-t pt-2">
+                        <div className="flex justify-between font-semibold">
+                          <span>Total</span>
+                          <span>₦{order.total.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {order.customJersey && (
                     <div className="border rounded-lg p-4 space-y-2">

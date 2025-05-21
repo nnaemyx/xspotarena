@@ -14,7 +14,7 @@ interface OrderDetails {
     product: {
       name: string;
       price: number;
-      image: string;
+      images: string[];
     };
     quantity: number;
     size: string;
@@ -142,7 +142,7 @@ export default function PaymentPage({ params }: { params: Promise<{ orderId: str
               {order.items.map((item, index) => (
                 <div key={index} className="flex items-center gap-4">
                   <img
-                    src={item.product.image}
+                    src={item.product.images[0] || "/placeholder.png"}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded"
                   />
@@ -151,14 +151,14 @@ export default function PaymentPage({ params }: { params: Promise<{ orderId: str
                     <p className="text-sm text-gray-500">
                       Size: {item.size} | Quantity: {item.quantity}
                     </p>
-                    <p className="text-sm">${item.product.price * item.quantity}</p>
+                    <p className="text-sm">₦{(item.product.price * item.quantity).toLocaleString()}</p>
                   </div>
                 </div>
               ))}
               <div className="border-t pt-4">
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>
-                  <span>${order.total}</span>
+                  <span>₦{order.total.toLocaleString()}</span>
                 </div>
               </div>
             </div>

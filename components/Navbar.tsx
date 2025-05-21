@@ -146,13 +146,22 @@ export default function Navbar() {
   return (
     <nav className=" fixed w-full bg-black z-50 top-0 left-0">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-[8rem] items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="hidden md:flex">
             <Image
               src={Logo}
               alt="Jersey Store Logo"
-              width={220}
+              width={200}
+              height={40}
+              className="w-auto"
+            />
+          </Link>
+          <Link href="/" className="md:hidden flex">
+            <Image
+              src={Logo}
+              alt="Jersey Store Logo"
+              width={120}
               height={40}
               className="w-auto"
             />

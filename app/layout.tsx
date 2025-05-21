@@ -26,7 +26,7 @@ export default function RootLayout({
           <Providers>
             <div className="min-h-screen flex flex-col">
               {!isAdminRoute && <Navbar />}
-              <main className={`flex-grow ${!isAdminRoute ? 'pt-16' : ''}`}>{children}</main>
+              <main className={`flex-grow ${!isAdminRoute ? 'pt-[8rem]' : ''}`}>{children}</main>
               {!isAdminRoute && <Footer />}
             </div>
           </Providers>

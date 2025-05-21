@@ -2,27 +2,25 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: Request) {
+export async function GET(req: Request) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decoded = await verifyAuth(token);
     if (!decoded) {
-      return NextResponse.json(
-        { error: "Invalid token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const notifications = await prisma.notification.findMany({
       where: {
         userId: decoded.userId,
+        AND: [
+          { title: { not: "" } },
+          { message: { not: "" } }
+        ]
       },
       orderBy: {
         createdAt: "desc",
@@ -31,7 +29,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ notifications });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    console.error("[NOTIFICATIONS_GET]", error);
     return NextResponse.json(
       { error: "Failed to fetch notifications" },
       { status: 500 }
@@ -43,46 +41,35 @@ export async function POST(req: Request) {
   try {
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decoded = await verifyAuth(token);
     if (!decoded) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { type, message, link, recipientId } = body;
+    const data = await req.json();
+    const { userId, type, title, message, link, metadata } = data;
 
-    if (!type || !message) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Create notification
+    // Create notification in database
     const notification = await prisma.notification.create({
       data: {
+        userId,
         type,
+        title,
         message,
         link,
-        userId: recipientId || decoded.userId,
+        metadata,
         read: false,
       },
     });
 
     return NextResponse.json(notification);
   } catch (error) {
-    console.error("[NOTIFICATIONS_POST]", error);
+    console.error('Error creating notification:', error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: 'Failed to create notification' },
       { status: 500 }
     );
   }
@@ -141,18 +128,12 @@ export async function DELETE(req: Request) {
   try {
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decoded = await verifyAuth(token);
     if (!decoded) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await prisma.notification.deleteMany({
@@ -161,11 +142,11 @@ export async function DELETE(req: Request) {
       },
     });
 
-    return NextResponse.json(null, { status: 204 });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[NOTIFICATIONS_DELETE]", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to clear notifications" },
       { status: 500 }
     );
   }

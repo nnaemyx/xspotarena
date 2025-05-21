@@ -75,9 +75,12 @@ export async function GET(
       // Create notification for user
       await prisma.notification.create({
         data: {
-          message: `Payment successful for order #${order.id}`,
+          userId: order.userId,
           type: "PAYMENT",
-          userId: order.userId
+          title: "Payment Successful",
+          message: `Payment successful for order #${order.id}`,
+          link: `/orders/${order.id}`,
+          metadata: { orderId: order.id }
         }
       });
 
@@ -95,9 +98,12 @@ export async function GET(
       // Create notification for user
       await prisma.notification.create({
         data: {
-          message: `Payment failed for order #${order.id}`,
+          userId: order.userId,
           type: "PAYMENT",
-          userId: order.userId
+          title: "Payment Failed",
+          message: `Payment failed for order #${order.id}`,
+          link: `/orders/${order.id}`,
+          metadata: { orderId: order.id }
         }
       });
 
@@ -106,6 +112,6 @@ export async function GET(
     }
   } catch (error) {
     console.error("[PAYMENT_VERIFY] Error:", error);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/orders/${params.orderId}?payment=error`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/orders/${params.orderId}?payment=error`);
   }
 } 

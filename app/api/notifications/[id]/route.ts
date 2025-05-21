@@ -3,34 +3,28 @@ import { prisma } from "@/lib/prisma";
 import { verifyAuth } from "@/lib/auth";
 
 export async function PATCH(
-  request: Request,
-  context: { params: { id: string } }
+  req: Request,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const decoded = await verifyAuth(token);
     if (!decoded) {
-      return NextResponse.json(
-        { error: "Invalid token" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = params;
+    const data = await req.json();
+    const { read } = data;
+
+    // Update notification
     const notification = await prisma.notification.update({
-      where: {
-        id: context.params.id,
-        userId: decoded.userId,
-      },
-      data: {
-        read: true,
-      },
+      where: { id },
+      data: { read },
     });
 
     return NextResponse.json(notification);
@@ -38,6 +32,38 @@ export async function PATCH(
     console.error("Error updating notification:", error);
     return NextResponse.json(
       { error: "Failed to update notification" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const token = req.headers.get("authorization")?.split(" ")[1];
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = await verifyAuth(token);
+    if (!decoded) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = params;
+
+    // Delete notification
+    await prisma.notification.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    return NextResponse.json(
+      { error: "Failed to delete notification" },
       { status: 500 }
     );
   }

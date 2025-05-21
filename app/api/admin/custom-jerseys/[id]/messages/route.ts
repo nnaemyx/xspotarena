@@ -86,6 +86,7 @@ export async function POST(
     if (request) {
       await prisma.notification.create({
         data: {
+          title: "New Message",
           message: "You have a new message about your custom jersey request",
           type: "MESSAGE",
           userId: request.userId,
