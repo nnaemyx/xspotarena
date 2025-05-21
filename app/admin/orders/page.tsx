@@ -67,7 +67,7 @@ export default function OrdersPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`/api/admin/orders/${orderId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -145,24 +145,28 @@ export default function OrdersPage() {
                 <div className="border-t pt-4">
                   <h3 className="font-medium mb-2">Order Items</h3>
                   <div className="space-y-2">
-                    {order.items.map((item, index) => (
-                      <div key={index} className="flex items-center space-x-4">
-                        <img
-                          src={item.product.images[0]}
-                          alt={item.product.name}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                        <div>
-                          <p className="font-medium">{item.product.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {item.quantity}x - Size: {item.size}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            ${item.price.toFixed(2)} each
-                          </p>
+                    {order.items && order.items.length > 0 ? (
+                      order.items.map((item, index) => (
+                        <div key={index} className="flex items-center space-x-4">
+                          <img
+                            src={item.product?.images?.[0] || '/placeholder.png'}
+                            alt={item.product?.name || 'Product image'}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-medium">{item.product?.name || 'Unknown Product'}</p>
+                            <p className="text-sm text-gray-500">
+                              {item.quantity}x - Size: {item.size || 'N/A'}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              ₦{(item.price || 0).toLocaleString()} each
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No items in this order</p>
+                    )}
                   </div>
                 </div>
               </div>

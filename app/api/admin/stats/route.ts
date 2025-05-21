@@ -26,45 +26,49 @@ export async function GET(req: Request) {
     // Get total number of orders
     const totalOrders = await prisma.order.count();
 
-    // Get total number of users
-    const totalUsers = await prisma.user.count();
-
-    // Get total revenue
-    const orders = await prisma.order.findMany({
+    // Get total number of users (customers)
+    const totalCustomers = await prisma.user.count({
       where: {
-        status: "DELIVERED",
-      },
-      select: {
-        total: true,
+        role: "USER",
       },
     });
 
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    // Get total number of messages
+    const totalMessages = await prisma.message.count();
 
-    // Get recent orders
-    const recentOrders = await prisma.order.findMany({
-      take: 5,
+    // Get recent orders for chart
+    const recentOrders = await prisma.order.groupBy({
+      by: ['createdAt'],
+      _count: {
+        id: true,
+      },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'asc',
       },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
+      take: 7,
+    }).then(orders => orders.map(order => ({
+      date: new Date(order.createdAt).toLocaleDateString(),
+      total: order._count.id,
+    })));
+
+    // Get order status distribution
+    const orderStatus = await prisma.order.groupBy({
+      by: ['status'],
+      _count: {
+        id: true,
       },
-    });
+    }).then(statuses => statuses.map(status => ({
+      status: status.status,
+      count: status._count.id,
+    })));
 
     return NextResponse.json({
-      stats: {
-        totalProducts,
-        totalOrders,
-        totalUsers,
-        totalRevenue,
-      },
+      totalProducts,
+      totalCustomers,
+      totalOrders,
+      totalMessages,
       recentOrders,
+      orderStatus,
     });
   } catch (error) {
     console.error("[STATS_GET]", error);

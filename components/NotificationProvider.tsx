@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
 import { useToast } from "@/components/ui/use-toast";
 
 interface Notification {
@@ -22,37 +21,32 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001");
-    setSocket(socket);
-
-    socket.on("notification", (notification: Notification) => {
-      setNotifications((prev) => [notification, ...prev]);
-      toast({
-        title: "New Notification",
-        description: notification.message,
-      });
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [toast]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch("/api/notifications");
-        if (!response.ok) throw new Error("Failed to fetch notifications");
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No token found");
+        }
+
+        const response = await fetch("/api/admin/notifications", {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch notifications");
+        }
+        
         const data = await response.json();
-        // Ensure data is an array before setting it
-        setNotifications(Array.isArray(data) ? data : []);
+        setNotifications(data.notifications || []);
       } catch (error) {
         console.error("Error fetching notifications:", error);
-        setNotifications([]); // Set empty array on error
+        setNotifications([]);
       }
     };
 
@@ -61,10 +55,16 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch(`/api/notifications/${id}`, {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+
+      const response = await fetch(`/api/admin/notifications/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ isRead: true }),
       });
@@ -86,8 +86,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const clearAll = async () => {
     try {
-      const response = await fetch("/api/notifications", {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+
+      const response = await fetch("/api/admin/notifications", {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
       });
 
       if (!response.ok) throw new Error("Failed to clear notifications");
@@ -103,10 +112,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  // Ensure notifications is an array before filtering
-  const unreadCount = Array.isArray(notifications) 
-    ? notifications.filter((n) => !n.isRead).length 
-    : 0;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <NotificationContext.Provider

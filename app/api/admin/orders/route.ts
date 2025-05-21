@@ -22,7 +22,18 @@ export async function GET(req: Request) {
             email: true,
           },
         },
-        customJersey: true,
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                images: true,
+                price: true,
+              }
+            }
+          }
+        },
+        shippingAddress: true,
       },
       orderBy: {
         createdAt: "desc",

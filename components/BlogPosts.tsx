@@ -1,73 +1,93 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Calendar, Clock } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
-const blogPosts = [
-  {
-    id: 1,
-    title: "How to Choose the Perfect Jersey for Your Team",
-    excerpt: "Learn the key factors to consider when selecting jerseys for your sports team...",
-    image: "/images/blog/choosing-jersey.jpg",
-    date: "2024-03-15",
-    readTime: "5 min read",
-  },
-  {
-    id: 2,
-    title: "The Evolution of Sports Jersey Design",
-    excerpt: "Explore how jersey designs have evolved over the years and what's trending now...",
-    image: "/images/blog/jersey-evolution.jpg",
-    date: "2024-03-10",
-    readTime: "7 min read",
-  },
-  {
-    id: 3,
-    title: "Custom Jersey Design Tips and Tricks",
-    excerpt: "Expert advice on creating eye-catching custom jersey designs that stand out...",
-    image: "/images/blog/design-tips.jpg",
-    date: "2024-03-05",
-    readTime: "6 min read",
-  },
-];
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  createdAt: string;
+  author: {
+    name: string;
+  };
+}
 
 export default function BlogPosts() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch("/api/blog?limit=3");
+      if (!response.ok) throw new Error("Failed to fetch blog posts");
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load blog posts",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="bg-gray-200 h-48 rounded-lg mb-4" />
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {blogPosts.map((post) => (
-        <Card key={post.id} className="overflow-hidden">
-          <div className="relative h-48 w-full">
-            <Image
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {posts.map((post) => (
+        <Link
+          key={post.id}
+          href={`/blog/${post.id}`}
+          className="group overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md"
+        >
+          <div className="aspect-video overflow-hidden">
+            <img
               src={post.image}
               alt={post.title}
-              fill
-              className="object-cover"
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
             />
           </div>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
-                {new Date(post.date).toLocaleDateString()}
-              </div>
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-1" />
-                {post.readTime}
-              </div>
+          <div className="p-6">
+            <h2 className="mb-2 text-xl font-semibold group-hover:text-blue-600">
+              {post.title}
+            </h2>
+            <p className="mb-4 text-sm text-gray-600">{post.excerpt}</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{post.author.name}</span>
+              <span>
+                {new Date(post.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
             </div>
-            <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
-            <p className="text-gray-600">{post.excerpt}</p>
-          </CardContent>
-          <CardFooter className="p-4 pt-0">
-            <Link
-              href={`/blog/${post.id}`}
-              className="text-primary hover:text-primary/80 font-medium"
-            >
-              Read More →
-            </Link>
-          </CardFooter>
-        </Card>
+          </div>
+        </Link>
       ))}
     </div>
   );

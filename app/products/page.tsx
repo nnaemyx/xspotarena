@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface Product {
   category: string;
   sizes: string[];
   stock: number;
+  stockStatus: string;
 }
 
 export default function ProductsPage() {
@@ -57,12 +59,29 @@ export default function ProductsPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const addToCart = async (productId: string) => {
+  const addToCart = async (productId: string, size: string) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Please login",
+          description: "You need to login to add items to cart",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const response = await fetch("/api/cart", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, quantity: 1 }),
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          productId, 
+          quantity: 1,
+          size: size || "M" // Default to Medium if no size specified
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to add to cart");
@@ -87,7 +106,7 @@ export default function ProductsPage() {
   return (
     <div className="container mx-auto p-8">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-3xl font-bold">Products</h1>
+        <h1 className="text-3xl font-bold">Jerseys</h1>
         <div className="flex flex-col gap-4 md:flex-row">
           <Input
             placeholder="Search products..."
@@ -100,10 +119,10 @@ export default function ProductsPage() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="jerseys">Jerseys</SelectItem>
-              <SelectItem value="shorts">Shorts</SelectItem>
-              <SelectItem value="accessories">Accessories</SelectItem>
+              <SelectItem value="all">All Jerseys</SelectItem>
+              <SelectItem value="RETRO_JERSEYS">Retro Jerseys</SelectItem>
+              <SelectItem value="HOME_JERSEYS">Home Jerseys</SelectItem>
+              <SelectItem value="AWAY_JERSEYS">Away Jerseys</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -115,28 +134,52 @@ export default function ProductsPage() {
             key={product.id}
             className="group relative overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md"
           >
-            <div className="aspect-square overflow-hidden">
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="mt-1 text-sm text-gray-600">{product.description}</p>
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-lg font-bold">${product.price}</span>
-                <Button
-                  size="sm"
-                  onClick={() => addToCart(product.id)}
-                  disabled={product.stock === 0}
-                >
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
-                </Button>
+            <Link href={`/products/${product.id}`}>
+              <div className="aspect-square overflow-hidden">
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                />
               </div>
-            </div>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="mt-1 text-sm text-gray-600">{product.description}</p>
+                <div className="mt-4 flex items-center justify-between">
+                  <div>
+                    <span className="text-lg font-bold">₦{product.price.toLocaleString()}</span>
+                    <p className={`text-sm ${
+                      product.stockStatus === "IN_STOCK" && product.stock > 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}>
+                      {product.stockStatus === "IN_STOCK" && product.stock > 0
+                        ? `${product.stock} in stock`
+                        : "Out of stock"}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // If product has sizes, redirect to product page
+                      if (product.sizes && product.sizes.length > 0) {
+                        window.location.href = `/products/${product.id}`;
+                      } else {
+                        // If no sizes, add directly to cart with default size
+                        addToCart(product.id, "M");
+                      }
+                    }}
+                    disabled={product.stockStatus === "OUT_OF_STOCK" || product.stock === 0}
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    {product.stockStatus === "OUT_OF_STOCK" || product.stock === 0
+                      ? "Out of Stock"
+                      : "Add to Cart"}
+                  </Button>
+                </div>
+              </div>
+            </Link>
           </div>
         ))}
       </div>

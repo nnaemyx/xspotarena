@@ -61,6 +61,7 @@ export async function POST(req: Request) {
       data: {
         userId,
         message: `New message from user regarding order ${orderId}`,
+        type: "MESSAGE"
       },
     });
 

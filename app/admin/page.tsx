@@ -148,6 +148,10 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+
       const res = await fetch("/api/admin/stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -157,9 +161,25 @@ export default function AdminDashboard() {
       }
 
       const data = await res.json();
-      setStats(data);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setStats({
+        totalProducts: data.totalProducts || 0,
+        totalCustomers: data.totalCustomers || 0,
+        totalOrders: data.totalOrders || 0,
+        totalMessages: data.totalMessages || 0,
+        recentOrders: data.recentOrders || [],
+        orderStatus: data.orderStatus || [],
+      });
     } catch (error) {
       console.error("Error fetching stats:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch dashboard statistics",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -183,67 +203,6 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  };
-
-  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`/api/admin/orders/${orderId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to update order status");
-      }
-
-      toast({
-        title: "Success",
-        description: "Order status updated successfully",
-      });
-
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update order status",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleMarkNotificationAsRead = async (notificationId: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`/api/admin/notifications/${notificationId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to mark notification as read");
-      }
-
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mark notification as read",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/login");
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {

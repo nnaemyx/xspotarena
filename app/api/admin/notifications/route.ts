@@ -31,4 +31,32 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const token = req.headers.get("authorization")?.split(" ")[1];
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = await verifyAuth(token);
+    if (!decoded) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await prisma.notification.deleteMany({
+      where: {
+        userId: decoded.userId,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error clearing notifications:", error);
+    return NextResponse.json(
+      { error: "Failed to clear notifications" },
+      { status: 500 }
+    );
+  }
 } 

@@ -22,6 +22,8 @@ model User {
   messages      Message[]
   notifications Notification[]
   blogPosts     BlogPost[]
+  products      Product[]
+  customJerseyRequests CustomJerseyRequest[]
   resetToken    String?
   resetTokenExpiry DateTime?
   otp           String?
@@ -30,17 +32,22 @@ model User {
 }
 
 model Product {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String
   price       Float
   images      String[]
-  category    String
+  category    ProductCategory
   sizes       String[]
-  stock       Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  stockStatus StockStatus
+  stock       Int          @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String        @db.ObjectId
+  user        User          @relation(fields: [userId], references: [id])
+  messages    Message[]
   orders      OrderItem[]
+  cartItems   CartItem[]
 }
 
 model Order {
@@ -53,7 +60,10 @@ model Order {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   customJersey  CustomJersey?
-  messages      Message[]   // <--- add this line
+  paymentReference String?
+  paymentDetails Json?
+  messages      Message[]
+  shippingAddress ShippingAddress?
 }
 
 model OrderItem {
@@ -80,6 +90,20 @@ model CustomJersey {
   updatedAt   DateTime @updatedAt
 }
 
+model CustomJerseyRequest {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  designImage String
+  description String
+  size        String
+  quantity    Int
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+  messages    Message[]
+}
+
 model Message {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
@@ -89,13 +113,19 @@ model Message {
   createdAt DateTime @default(now())
   order     Order?   @relation(fields: [orderId], references: [id])
   orderId   String?  @db.ObjectId
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?  @db.ObjectId
+  customJerseyRequest CustomJerseyRequest? @relation(fields: [customJerseyRequestId], references: [id])
+  customJerseyRequestId String? @db.ObjectId
 }
 
 model Notification {
-  id        String   @id @default(cuid()) @map("_id")
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  type      String   // MESSAGE, ORDER, etc.
   message   String
-  isRead    Boolean  @default(false)
-  userId    String
+  link      String?
+  read      Boolean  @default(false)
+  userId    String   @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,6 +147,40 @@ model BlogPost {
   @@map("blog_posts")
 }
 
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  size      String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingAddress {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String   @unique @db.ObjectId
+  fullName  String
+  email     String
+  phone     String
+  address   String
+  city      String
+  state     String
+  country   String
+  zipCode   String
+}
+
 enum Role {
   USER
   ADMIN
@@ -128,4 +192,15 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum ProductCategory {
+  RETRO_JERSEYS
+  HOME_JERSEYS
+  AWAY_JERSEYS
+}
+
+enum StockStatus {
+  IN_STOCK
+  OUT_OF_STOCK
 } 

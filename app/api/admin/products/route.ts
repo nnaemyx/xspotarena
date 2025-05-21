@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const VALID_CATEGORIES = ["RETRO_JERSEYS", "HOME_JERSEYS", "AWAY_JERSEYS"] as const;
+const VALID_STOCK_STATUS = ["IN_STOCK", "OUT_OF_STOCK"] as const;
+
 export async function GET(req: Request) {
   try {
     const token = req.headers.get("authorization")?.split(" ")[1];
@@ -55,11 +58,25 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, description, price, images, category, stock } = body;
+    const { name, description, price, images, category, stockStatus, sizes, stock } = body;
 
-    if (!name || !description || !price || !images || !category || stock === undefined) {
+    if (!name || !description || !price || !images || !category || !stockStatus || !sizes || !stock) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_CATEGORIES.includes(category)) {
+      return NextResponse.json(
+        { error: "Invalid category" },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_STOCK_STATUS.includes(stockStatus)) {
+      return NextResponse.json(
+        { error: "Invalid stock status" },
         { status: 400 }
       );
     }
@@ -71,7 +88,14 @@ export async function POST(req: Request) {
         price,
         images,
         category,
+        stockStatus,
+        sizes,
         stock,
+        user: {
+          connect: {
+            id: decoded.userId
+          }
+        }
       },
     });
 

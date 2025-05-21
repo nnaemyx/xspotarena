@@ -7,7 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Pencil, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 
 interface Product {
   id: string;
@@ -18,21 +26,26 @@ interface Product {
   category: string;
   sizes: string[];
   stock: number;
+  stockStatus: string;
 }
 
 export default function ProductManagementPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     category: "",
     stock: "",
+    stockStatus: "IN_STOCK",
     images: [] as string[],
     sizes: [""],
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProducts();
@@ -60,37 +73,15 @@ export default function ProductManagementPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    try {
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append("images", files[i]);
-      }
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to upload images");
-      }
-
-      const data = await res.json();
-      setFormData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...data.urls],
-      }));
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to upload images",
-        variant: "destructive",
-      });
-    }
+    setSelectedFiles(files);
+    
+    // Create preview URLs
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
   };
 
   const handleAddSize = () => {
@@ -107,20 +98,91 @@ export default function ProductManagementPage() {
     }));
   };
 
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      category: product.category,
+      stock: product.stock.toString(),
+      stockStatus: product.stockStatus,
+      images: product.images,
+      sizes: product.sizes,
+    });
+    setPreviewUrls(product.images);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+
+      fetchProducts();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // First upload all new images
+      const uploadedUrls: string[] = [];
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to upload images");
+        }
+
+        const data = await res.json();
+        uploadedUrls.push(data.url);
+      }
+
+      // Combine existing images with new ones if editing
+      const finalImages = editingProduct 
+        ? [...editingProduct.images, ...uploadedUrls]
+        : uploadedUrls;
+
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/admin/products", {
-        method: "POST",
+      const url = editingProduct 
+        ? `/api/admin/products/${editingProduct.id}`
+        : "/api/admin/products";
+      
+      const res = await fetch(url, {
+        method: editingProduct ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           ...formData,
+          images: finalImages,
           price: parseFloat(formData.price),
           stock: parseInt(formData.stock),
           sizes: formData.sizes.filter(Boolean),
@@ -128,12 +190,12 @@ export default function ProductManagementPage() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create product");
+        throw new Error(editingProduct ? "Failed to update product" : "Failed to create product");
       }
 
       toast({
         title: "Success",
-        description: "Product created successfully",
+        description: editingProduct ? "Product updated successfully" : "Product created successfully",
       });
 
       // Reset form
@@ -143,15 +205,19 @@ export default function ProductManagementPage() {
         price: "",
         category: "",
         stock: "",
+        stockStatus: "IN_STOCK",
         images: [],
         sizes: [""],
       });
+      setSelectedFiles([]);
+      setPreviewUrls([]);
+      setEditingProduct(null);
 
       fetchProducts();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create product",
+        description: error instanceof Error ? error.message : "Failed to save product",
         variant: "destructive",
       });
     } finally {
@@ -166,7 +232,7 @@ export default function ProductManagementPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle>Add New Product</CardTitle>
+            <CardTitle>{editingProduct ? "Edit Product" : "Add New Product"}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -187,7 +253,7 @@ export default function ProductManagementPage() {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
                       description: e.target.value,
@@ -213,17 +279,24 @@ export default function ProductManagementPage() {
 
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Input
-                  id="category"
+                <Select
                   value={formData.category}
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setFormData((prev) => ({
                       ...prev,
-                      category: e.target.value,
+                      category: value,
                     }))
                   }
-                  required
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RETRO_JERSEYS">Retro Jerseys</SelectItem>
+                    <SelectItem value="HOME_JERSEYS">Home Jerseys</SelectItem>
+                    <SelectItem value="AWAY_JERSEYS">Away Jerseys</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
@@ -240,27 +313,63 @@ export default function ProductManagementPage() {
               </div>
 
               <div>
-                <Label htmlFor="images">Images</Label>
+                <Label htmlFor="stockStatus">Stock Status</Label>
+                <Select
+                  value={formData.stockStatus}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      stockStatus: value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select stock status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IN_STOCK">In Stock</SelectItem>
+                    <SelectItem value="OUT_OF_STOCK">Out of Stock</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Images</Label>
                 <Input
-                  id="images"
                   type="file"
-                  multiple
                   accept="image/*"
-                  onChange={handleImageUpload}
-                  required
+                  multiple
+                  onChange={handleImageSelect}
+                  className="mt-2"
                 />
-                {formData.images.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {formData.images.map((url, index) => (
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  {previewUrls.map((url, index) => (
+                    <div key={index} className="relative">
                       <img
-                        key={index}
                         src={url}
-                        alt={`Product ${index + 1}`}
+                        alt={`Preview ${index + 1}`}
                         className="w-full h-32 object-cover rounded"
                       />
-                    ))}
-                  </div>
-                )}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+                          if (editingProduct) {
+                            setFormData(prev => ({
+                              ...prev,
+                              images: prev.images.filter((_, i) => i !== index)
+                            }));
+                          }
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -278,25 +387,23 @@ export default function ProductManagementPage() {
                             ),
                           }))
                         }
-                        placeholder="Size (e.g., S, M, L)"
+                        placeholder="Enter size"
                       />
-                      {index > 0 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveSize(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleRemoveSize(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
                     onClick={handleAddSize}
+                    className="w-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Size
@@ -305,7 +412,7 @@ export default function ProductManagementPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating..." : "Create Product"}
+                {editingProduct ? "Update Product" : "Add Product"}
               </Button>
             </form>
           </CardContent>
@@ -317,7 +424,25 @@ export default function ProductManagementPage() {
             {products.map((product) => (
               <Card key={product.id}>
                 <CardHeader>
-                  <CardTitle>{product.name}</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>{product.name}</CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleEditProduct(product)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
@@ -335,9 +460,13 @@ export default function ProductManagementPage() {
                   </p>
                   <div className="flex justify-between items-center mt-4">
                     <div>
-                      <p className="font-medium">${product.price}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Stock: {product.stock}
+                      <p className="font-medium">₦{product.price.toLocaleString()}</p>
+                      <p className={`text-sm ${
+                        product.stockStatus === "IN_STOCK" 
+                          ? "text-green-600" 
+                          : "text-red-600"
+                      }`}>
+                        {product.stockStatus === "IN_STOCK" ? "In Stock" : "Out of Stock"}
                       </p>
                     </div>
                     <div className="flex gap-2">

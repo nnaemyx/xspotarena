@@ -110,6 +110,7 @@ export async function POST(
       data: {
         message: `New message from ${message.user.name}`,
         userId: decoded.role === "ADMIN" ? order.userId : order.userId,
+        type: "MESSAGE"
       },
     });
 

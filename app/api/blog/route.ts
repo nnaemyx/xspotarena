@@ -3,29 +3,40 @@ import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/blog - Get all published blog posts
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const posts = await prisma.blogPost.findMany({
-      where: {
-        published: true,
-      },
-      include: {
-        author: {
-          select: {
-            name: true,
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const page = parseInt(searchParams.get("page") || "1");
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      prisma.blogPost.findMany({
+        take: limit,
+        skip,
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          author: {
+            select: {
+              name: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: "desc",
+      }),
+      prisma.blogPost.count(),
+    ]);
+
+    return NextResponse.json(posts, {
+      headers: {
+        "X-Total-Count": total.toString(),
       },
     });
-
-    return NextResponse.json(posts);
   } catch (error) {
     console.error("Error fetching blog posts:", error);
     return NextResponse.json(
-      { error: "Error fetching blog posts" },
+      { error: "Failed to fetch blog posts" },
       { status: 500 }
     );
   }
