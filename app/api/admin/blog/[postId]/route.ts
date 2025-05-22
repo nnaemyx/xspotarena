@@ -6,9 +6,10 @@ import slugify from "slugify";
 // GET /api/admin/blog/[postId]
 export async function GET(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    const { postId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -26,7 +27,7 @@ export async function GET(
     }
 
     const post = await prisma.blogPost.findUnique({
-      where: { id: params.postId },
+      where: { id: postId },
     });
 
     if (!post) {
@@ -49,9 +50,10 @@ export async function GET(
 // PUT /api/admin/blog/[postId]
 export async function PUT(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    const { postId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -82,7 +84,7 @@ export async function PUT(
     const excerpt = content.substring(0, 150) + "...";
 
     const post = await prisma.blogPost.update({
-      where: { id: params.postId },
+      where: { id: postId },
       data: {
         title,
         slug,
@@ -105,9 +107,10 @@ export async function PUT(
 // DELETE /api/admin/blog/[postId]
 export async function DELETE(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    const { postId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -125,7 +128,7 @@ export async function DELETE(
     }
 
     await prisma.blogPost.delete({
-      where: { id: params.postId },
+      where: { id: postId },
     });
 
     return new NextResponse(null, { status: 204 });
@@ -141,9 +144,10 @@ export async function DELETE(
 // PATCH /api/admin/blog/[postId]
 export async function PATCH(
   request: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    const { postId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -171,7 +175,7 @@ export async function PATCH(
     }
 
     const post = await prisma.blogPost.update({
-      where: { id: params.postId },
+      where: { id: postId },
       data: { published },
     });
 
