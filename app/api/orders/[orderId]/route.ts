@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
+  request: Request,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const { orderId } = await params;
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -16,19 +16,16 @@ export async function GET(
       );
     }
 
-    const userId = await verifyToken(token);
-    if (!userId) {
+    const decoded = await verifyAuth(token);
+    if (!decoded) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-        userId,
-      },
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
       include: {
         items: {
           include: {
@@ -46,11 +43,19 @@ export async function GET(
       );
     }
 
+    // Check if user is authorized to view this order
+    if (order.userId !== decoded.userId && decoded.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(order);
   } catch (error) {
-    console.error("[ORDER_GET] Error:", error);
+    console.error("Error fetching order:", error);
     return NextResponse.json(
-      { error: "Failed to fetch order" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -2,49 +2,12 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/blog/[slug] - Get a single blog post
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { slug } = await params;
-    const post = await prisma.blogPost.findUnique({
-      where: { slug },
-      include: {
-        author: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!post) {
-      return NextResponse.json(
-        { error: "Post not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(post);
-  } catch (error) {
-    console.error("Error fetching blog post:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT /api/blog/[slug] - Update a blog post (admin only)
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  try {
-    const { slug } = await params;
+    const { id } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -54,7 +17,65 @@ export async function PUT(
     }
 
     const decoded = await verifyAuth(token);
-    if (!decoded || decoded.role !== "ADMIN") {
+    if (!decoded) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const customJersey = await prisma.customJersey.findUnique({
+      where: { id },
+      include: {
+        order: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!customJersey) {
+      return NextResponse.json(
+        { error: "Custom jersey not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is authorized to view this custom jersey
+    if (customJersey.order.userId !== decoded.userId && decoded.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(customJersey);
+  } catch (error) {
+    console.error("Error fetching custom jersey:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const token = request.headers.get("Authorization")?.split(" ")[1];
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyAuth(token);
+    if (!decoded) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -62,27 +83,28 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, content, image } = body;
+    const { design, size, color, quantity } = body;
 
-    if (!title || !content || !image) {
+    if (!design || !size || !color || !quantity) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    const post = await prisma.blogPost.update({
-      where: { slug },
+    const customJersey = await prisma.customJersey.update({
+      where: { id },
       data: {
-        title,
-        content,
-        image,
+        design,
+        size,
+        color,
+        quantity,
       },
     });
 
-    return NextResponse.json(post);
+    return NextResponse.json(customJersey);
   } catch (error) {
-    console.error("Error updating blog post:", error);
+    console.error("Error updating custom jersey:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -90,13 +112,12 @@ export async function PUT(
   }
 }
 
-// DELETE /api/blog/[slug] - Delete a blog post (admin only)
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { slug } = await params;
+    const { id } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -106,20 +127,20 @@ export async function DELETE(
     }
 
     const decoded = await verifyAuth(token);
-    if (!decoded || decoded.role !== "ADMIN") {
+    if (!decoded) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    await prisma.blogPost.delete({
-      where: { slug },
+    await prisma.customJersey.delete({
+      where: { id },
     });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Error deleting blog post:", error);
+    console.error("Error deleting custom jersey:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

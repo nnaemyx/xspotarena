@@ -3,20 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+        images: true,
+        sizes: true,
       },
     });
 
@@ -29,7 +24,7 @@ export async function GET(
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error("[PRODUCT_GET]", error);
+    console.error("Error fetching product:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
