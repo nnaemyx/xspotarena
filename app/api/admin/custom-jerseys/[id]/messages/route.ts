@@ -2,15 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAuth } from "@/lib/auth";
 
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
-
 export async function GET(
   request: Request,
-  { params }: RouteContext
+  context: { params: { id: string } }
 ) {
   try {
     const token = request.headers.get("authorization")?.split(" ")[1];
@@ -25,7 +19,7 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        customJerseyRequestId: params.id,
+        customJerseyRequestId: context.params.id,
       },
       include: {
         user: {
@@ -52,7 +46,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: RouteContext
+  context: { params: { id: string } }
 ) {
   try {
     const token = request.headers.get("authorization")?.split(" ")[1];
@@ -70,7 +64,7 @@ export async function POST(
     const message = await prisma.message.create({
       data: {
         content,
-        customJerseyRequestId: params.id,
+        customJerseyRequestId: context.params.id,
         userId: decoded.userId,
       },
       include: {
@@ -85,7 +79,7 @@ export async function POST(
 
     // Create notification for the user
     const jerseyRequest = await prisma.customJerseyRequest.findUnique({
-      where: { id: params.id },
+      where: { id: context.params.id },
       select: { userId: true },
     });
 
