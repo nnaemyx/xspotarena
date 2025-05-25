@@ -4,9 +4,10 @@ import { verifyAuth } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -26,7 +27,7 @@ export async function GET(
     // Verify the user owns this request
     const request = await prisma.customJerseyRequest.findFirst({
       where: {
-        id: context.params.id,
+        id,
         userId: decoded.userId,
       },
     });
@@ -40,7 +41,7 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        customJerseyRequestId: context.params.id,
+        customJerseyRequestId: id,
       },
       include: {
         user: {
@@ -67,9 +68,10 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -89,7 +91,7 @@ export async function POST(
     // Verify the user owns this request
     const request = await prisma.customJerseyRequest.findFirst({
       where: {
-        id: context.params.id,
+        id,
         userId: decoded.userId,
       },
     });
@@ -106,7 +108,7 @@ export async function POST(
     const message = await prisma.message.create({
       data: {
         content,
-        customJerseyRequestId: context.params.id,
+        customJerseyRequestId: id,
         userId: decoded.userId,
       },
       include: {

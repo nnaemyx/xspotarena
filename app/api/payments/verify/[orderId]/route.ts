@@ -4,24 +4,25 @@ import https from 'https';
 
 export async function GET(
   req: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     // Get the reference from the query parameters
     const { searchParams } = new URL(req.url);
     const reference = searchParams.get('reference');
 
     if (!reference) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/orders/${params.orderId}?payment=failed`);
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}?payment=failed`);
     }
 
     // Get order details
     const order = await prisma.order.findUnique({
-      where: { id: params.orderId },
+      where: { id: orderId },
     });
 
     if (!order) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/orders/${params.orderId}?payment=failed`);
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}?payment=failed`);
     }
 
     // Verify payment with Paystack
@@ -112,6 +113,7 @@ export async function GET(
     }
   } catch (error) {
     console.error("[PAYMENT_VERIFY] Error:", error);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/orders/${params.orderId}?payment=error`);
+    const { orderId } = await params;
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/orders/${orderId}?payment=error`);
   }
 } 

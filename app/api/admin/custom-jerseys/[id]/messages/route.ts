@@ -4,9 +4,10 @@ import { verifyAuth } from "@/lib/auth";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,7 +20,7 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        customJerseyRequestId: params.id,
+        customJerseyRequestId: id,
       },
       include: {
         user: {
@@ -46,9 +47,10 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,7 +66,7 @@ export async function POST(
     const message = await prisma.message.create({
       data: {
         content,
-        customJerseyRequestId: params.id,
+        customJerseyRequestId: id,
         userId: decoded.userId,
       },
       include: {
@@ -79,7 +81,7 @@ export async function POST(
 
     // Create notification for the user
     const jerseyRequest = await prisma.customJerseyRequest.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { userId: true },
     });
 

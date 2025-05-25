@@ -4,9 +4,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  context: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -24,7 +25,7 @@ export async function GET(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: context.params.orderId },
+      where: { id: orderId },
       include: {
         user: true,
         items: {
@@ -54,9 +55,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  context: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -75,7 +77,7 @@ export async function PATCH(
 
     const { status } = await request.json();
     const order = await prisma.order.update({
-      where: { id: context.params.orderId },
+      where: { id: orderId },
       data: { status },
       include: { user: true }
     });

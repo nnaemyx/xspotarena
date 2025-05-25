@@ -4,9 +4,10 @@ import { verifyAuth } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -25,7 +26,7 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        productId: context.params.id,
+        productId: id,
       },
       include: {
         user: {
@@ -53,9 +54,10 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -87,7 +89,7 @@ export async function POST(
       data: {
         content,
         userId: decoded.userId,
-        productId: context.params.id,
+        productId: id,
       },
       include: {
         user: {
@@ -102,7 +104,7 @@ export async function POST(
 
     // Get the product to find the seller
     const product = await prisma.product.findUnique({
-      where: { id: context.params.id },
+      where: { id },
       select: { userId: true },
     });
 
@@ -120,7 +122,7 @@ export async function POST(
         title: "New Message",
         type: "MESSAGE",
         message: `New message from ${message.user.name}: ${content}`,
-        link: `/products/${context.params.id}`,
+        link: `/products/${id}`,
         userId: recipientId,
         read: false,
       },

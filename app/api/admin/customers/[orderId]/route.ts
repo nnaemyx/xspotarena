@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 // GET /api/admin/customers/[orderId] - Get a specific customer with their orders
 export async function GET(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -25,7 +26,7 @@ export async function GET(
     }
 
     const customer = await prisma.user.findUnique({
-      where: { id: params.orderId },
+      where: { id: orderId },
       include: {
         orders: {
           include: {
@@ -62,9 +63,10 @@ export async function GET(
 // PUT /api/admin/customers/[orderId] - Update customer details
 export async function PUT(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -92,7 +94,7 @@ export async function PUT(
     }
 
     const customer = await prisma.user.update({
-      where: { id: params.orderId },
+      where: { id: orderId },
       data: { role },
     });
 
@@ -109,9 +111,10 @@ export async function PUT(
 // DELETE /api/admin/customers/[orderId] - Delete a customer
 export async function DELETE(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -129,7 +132,7 @@ export async function DELETE(
     }
 
     await prisma.user.delete({
-      where: { id: params.orderId },
+      where: { id: orderId },
     });
 
     return NextResponse.json({ message: "Customer deleted successfully" });

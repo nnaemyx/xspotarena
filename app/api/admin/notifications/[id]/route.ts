@@ -4,9 +4,10 @@ import { verifyAuth } from "@/lib/auth";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,7 +22,7 @@ export async function PATCH(
 
     const notification = await prisma.notification.update({
       where: {
-        id: params.id,
+        id,
         userId: decoded.userId,
       },
       data: {
