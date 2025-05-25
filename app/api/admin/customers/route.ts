@@ -60,9 +60,10 @@ export async function GET(req: Request) {
 // PUT /api/admin/customers/[id] - Update customer role
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -88,7 +89,7 @@ export async function PUT(
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingUser) {
@@ -99,7 +100,7 @@ export async function PUT(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { role },
     });
 
@@ -116,9 +117,10 @@ export async function PUT(
 // DELETE /api/admin/customers/[id] - Delete a customer
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = req.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -136,7 +138,7 @@ export async function DELETE(
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingUser) {
@@ -149,16 +151,16 @@ export async function DELETE(
     // Delete all related data first
     await prisma.$transaction([
       prisma.message.deleteMany({
-        where: { userId: params.id },
+        where: { userId: id },
       }),
       prisma.notification.deleteMany({
-        where: { userId: params.id },
+        where: { userId: id },
       }),
       prisma.order.deleteMany({
-        where: { userId: params.id },
+        where: { userId: id },
       }),
       prisma.user.delete({
-        where: { id: params.id },
+        where: { id },
       }),
     ]);
 
