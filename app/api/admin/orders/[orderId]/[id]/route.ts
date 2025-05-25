@@ -84,6 +84,7 @@ export async function PATCH(
     if (status === "COMPLETED") {
       await prisma.notification.create({
         data: {
+          title: "Order Completed",
           message: `Your order #${order.id} has been completed`,
           type: "ORDER",
           userId: order.userId

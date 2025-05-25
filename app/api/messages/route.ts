@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { verifyAuth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{}> }
 ) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -25,25 +25,25 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        productId: context.params.id,
+        userId: decoded.userId,
       },
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            role: true,
+            email: true,
           },
         },
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
 
     return NextResponse.json(messages);
   } catch (error) {
-    console.error("[MESSAGES_GET]", error);
+    console.error("Error fetching messages:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -52,11 +52,11 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{}> }
 ) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -72,63 +72,35 @@ export async function POST(
       );
     }
 
-    const body = await req.json();
+    const body = await request.json();
     const { content } = body;
 
     if (!content) {
       return NextResponse.json(
-        { error: "Message content is required" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Create the message
     const message = await prisma.message.create({
       data: {
-        content,
         userId: decoded.userId,
-        productId: context.params.id,
+        content,
       },
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            role: true,
+            email: true,
           },
         },
       },
     });
 
-    // Get the product to find the seller
-    const product = await prisma.product.findUnique({
-      where: { id: context.params.id },
-      select: { userId: true },
-    });
-
-    if (!product) {
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
-    }
-
-    // Create notification for the recipient
-    const recipientId = decoded.role === "ADMIN" ? product.userId : "admin";
-    await prisma.notification.create({
-      data: {
-        title: "New Message",
-        type: "MESSAGE",
-        message: `New message from ${message.user.name}: ${content}`,
-        link: `/products/${context.params.id}`,
-        userId: recipientId,
-        read: false,
-      },
-    });
-
     return NextResponse.json(message);
   } catch (error) {
-    console.error("[MESSAGES_POST]", error);
+    console.error("Error creating message:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

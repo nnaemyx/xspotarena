@@ -124,6 +124,7 @@ export async function POST(
     // Create notification for the other party
     await prisma.notification.create({
       data: {
+        title: "New Message",
         message: `New message from ${message.user.name}`,
         userId: decoded.role === "ADMIN" ? order.userId : order.userId,
         type: "MESSAGE"

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { verifyAuth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const { id } = await params;
+    const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -18,30 +19,130 @@ export async function GET(
     const decoded = await verifyAuth(token);
     if (!decoded) {
       return NextResponse.json(
-        { error: "Invalid token" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const request = await prisma.customJerseyRequest.findFirst({
-      where: {
-        id: context.params.id,
-        userId: decoded.userId,
+    const customJersey = await prisma.customJersey.findUnique({
+      where: { id },
+      include: {
+        order: {
+          select: {
+            userId: true,
+          },
+        },
       },
     });
 
-    if (!request) {
+    if (!customJersey) {
       return NextResponse.json(
-        { error: "Request not found" },
+        { error: "Custom jersey not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ request });
+    // Check if user is authorized to view this custom jersey
+    if (customJersey.order.userId !== decoded.userId && decoded.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(customJersey);
   } catch (error) {
-    console.error("Error fetching custom jersey request:", error);
+    console.error("Error fetching custom jersey:", error);
     return NextResponse.json(
-      { error: "Failed to fetch request" },
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const token = request.headers.get("Authorization")?.split(" ")[1];
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyAuth(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { design, size, color, quantity } = body;
+
+    if (!design || !size || !color || !quantity) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    const customJersey = await prisma.customJersey.update({
+      where: { id },
+      data: {
+        design,
+        size,
+        color,
+        quantity,
+      },
+    });
+
+    return NextResponse.json(customJersey);
+  } catch (error) {
+    console.error("Error updating custom jersey:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const token = request.headers.get("Authorization")?.split(" ")[1];
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = await verifyAuth(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    await prisma.customJersey.delete({
+      where: { id },
+    });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("Error deleting custom jersey:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

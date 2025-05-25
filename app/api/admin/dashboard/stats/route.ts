@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { OrderStatus } from "@prisma/client";
 
 export async function GET(
   request: Request,
@@ -32,7 +33,7 @@ export async function GET(
     // Get total revenue
     const orders = await prisma.order.findMany({
       where: {
-        status: "COMPLETED" as const,
+        status: "COMPLETED" as OrderStatus,
       },
       select: {
         total: true,

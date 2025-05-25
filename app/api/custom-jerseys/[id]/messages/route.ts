@@ -122,6 +122,7 @@ export async function POST(
     // Create notification for admin
     await prisma.notification.create({
       data: {
+        title: "New Message",
         message: "You have a new message about a custom jersey request",
         type: "MESSAGE",
         userId: request.userId,

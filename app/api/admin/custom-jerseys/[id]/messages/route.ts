@@ -2,12 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAuth } from "@/lib/auth";
 
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 export async function GET(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: RouteContext
 ) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -19,7 +25,7 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        customJerseyRequestId: context.params.id,
+        customJerseyRequestId: params.id,
       },
       include: {
         user: {
@@ -45,11 +51,11 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: RouteContext
 ) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers.get("authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -59,12 +65,12 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { content } = await req.json();
+    const { content } = await request.json();
 
     const message = await prisma.message.create({
       data: {
         content,
-        customJerseyRequestId: context.params.id,
+        customJerseyRequestId: params.id,
         userId: decoded.userId,
       },
       include: {
@@ -78,18 +84,18 @@ export async function POST(
     });
 
     // Create notification for the user
-    const request = await prisma.customJerseyRequest.findUnique({
-      where: { id: context.params.id },
+    const jerseyRequest = await prisma.customJerseyRequest.findUnique({
+      where: { id: params.id },
       select: { userId: true },
     });
 
-    if (request) {
+    if (jerseyRequest) {
       await prisma.notification.create({
         data: {
           title: "New Message",
           message: "You have a new message about your custom jersey request",
           type: "MESSAGE",
-          userId: request.userId,
+          userId: jerseyRequest.userId,
         },
       });
     }

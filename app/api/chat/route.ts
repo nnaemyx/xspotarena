@@ -59,6 +59,7 @@ export async function POST(req: Request) {
     // Create notification for admin
     await prisma.notification.create({
       data: {
+        title: "New Message",
         userId,
         message: `New message from user regarding order ${orderId}`,
         type: "MESSAGE"

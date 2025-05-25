@@ -68,6 +68,7 @@ export async function PATCH(req: Request) {
     // Create notification for the user
     await prisma.notification.create({
       data: {
+        title: "Custom Jersey Update",
         message: `Your custom jersey request has been ${status.toLowerCase()}`,
         type: "CUSTOM_JERSEY",
         userId: request.userId,

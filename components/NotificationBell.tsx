@@ -4,7 +4,7 @@ import { useNotifications } from "./NotificationProvider";
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead, clearAll } = useNotifications();
+  const { notifications, unreadCount, markAsRead, clearNotifications } = useNotifications();
 
   return (
     <div className="relative">
@@ -27,7 +27,7 @@ export default function NotificationBell() {
               <h3 className="text-lg font-medium">Notifications</h3>
               {notifications.length > 0 && (
                 <button
-                  onClick={clearAll}
+                  onClick={clearNotifications}
                   className="text-sm text-gray-500 hover:text-gray-700"
                 >
                   Clear all

@@ -88,7 +88,7 @@ export default function OrderSuccessPage() {
           toast({
             title: "Payment Pending",
             description: "We're still processing your payment",
-            variant: "warning",
+            variant: "default",
           });
         }
       } catch (error) {

@@ -4,7 +4,7 @@ import { verifyAuth } from "@/lib/auth";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const token = req.headers.get("authorization")?.split(" ")[1];
@@ -35,7 +35,7 @@ export async function PATCH(
 
     const request = await prisma.customJersey.update({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
       data: {
         status,
