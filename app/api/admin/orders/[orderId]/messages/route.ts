@@ -4,9 +4,10 @@ import { verifyAuth } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,7 +20,7 @@ export async function GET(
 
     const messages = await prisma.message.findMany({
       where: {
-        orderId: params.orderId,
+        orderId,
       },
       include: {
         user: {
@@ -47,9 +48,10 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await params;
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -70,7 +72,7 @@ export async function POST(
 
     // Verify the order exists and belongs to the user or is accessible by admin
     const order = await prisma.order.findUnique({
-      where: { id: params.orderId },
+      where: { id: orderId },
       include: { user: true },
     });
 
@@ -91,7 +93,7 @@ export async function POST(
     const message = await prisma.message.create({
       data: {
         content,
-        orderId: params.orderId,
+        orderId,
         userId: decoded.userId,
       },
       include: {

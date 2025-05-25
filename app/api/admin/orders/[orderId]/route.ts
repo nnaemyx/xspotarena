@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
@@ -55,10 +55,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = await params;
     const token = request.headers.get("Authorization")?.split(" ")[1];
     if (!token) {
       return NextResponse.json(
