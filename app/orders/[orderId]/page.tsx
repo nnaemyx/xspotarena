@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,9 +39,10 @@ interface OrderDetails {
   };
 }
 
-export default function OrderDetailsPage({ params }: { params: Promise<{ orderId: string }> }) {
+function OrderDetailsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
   const { toast } = useToast();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ orderId
   useEffect(() => {
     const init = async () => {
       try {
-        const { orderId } = await params;
+        const orderId = params.orderId as string;
         setOrderId(orderId);
       } catch (error) {
         console.error("Error getting order ID:", error);
@@ -257,5 +258,15 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ orderId
         )}
       </div>
     </div>
+  );
+}
+
+export default function OrderDetailsPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">
+      <div className="text-center">Loading...</div>
+    </div>}>
+      <OrderDetailsContent />
+    </Suspense>
   );
 } 
