@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import { writeFile } from "fs/promises";
-import { join } from "path";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -24,16 +22,25 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Save to temp directory
-    const path = join("/tmp", file.name);
-    await writeFile(path, buffer);
-
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(path, {
-      folder: "xspot arena",
+    // Upload to Cloudinary using upload_stream
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "xspot arena",
+          resource_type: "auto",
+        },
+        (error, result) => {
+          if (error) {
+            console.error("Cloudinary upload error:", error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      ).end(buffer);
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    return NextResponse.json({ url: (result as any).secure_url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

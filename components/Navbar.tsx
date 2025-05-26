@@ -146,7 +146,7 @@ export default function Navbar() {
   return (
     <nav className=" fixed w-full bg-black z-50 top-0 left-0">
       <div className="container mx-auto px-4">
-        <div className="flex h-[8rem] items-center justify-between">
+        <div className="flex h-[4rem] md:h-[6rem] items-center justify-between">
           {/* Logo */}
           <Link href="/" className="hidden md:flex">
             <Image

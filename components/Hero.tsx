@@ -12,7 +12,7 @@ const heroImages = [
 
 export default function Hero() {
   return (
-    <section className="relative h-[90vh] md:h-[80vh] overflow-hidden">
+    <section className="relative h-[calc(100vh-4rem)] mt-16 md:-mt-16">
       <Carousel 
         className="w-full h-full" 
         autoPlay={true}
@@ -25,7 +25,7 @@ export default function Hero() {
       >
         <CarouselContent>
           {heroImages.map((image, index) => (
-            <CarouselItem key={index} className="h-[90vh] md:h-[80vh]">
+            <CarouselItem key={index} className="h-[calc(100vh-4rem)]">
               <div className="relative w-full h-full">
                 <img
                   src={image}

@@ -18,6 +18,7 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
+  const isHomePage = pathname === "/";
 
   return (
     <html lang="en">
@@ -26,7 +27,7 @@ export default function RootLayout({
           <Providers>
             <div className="min-h-screen flex flex-col">
               {!isAdminRoute && <Navbar />}
-              <main className={`flex-grow ${!isAdminRoute ? 'pt-[8rem]' : ''}`}>{children}</main>
+              <main className={`flex-grow ${!isAdminRoute && !isHomePage ? 'pt-[8rem]' : ''}`}>{children}</main>
               {!isAdminRoute && <Footer />}
             </div>
           </Providers>
