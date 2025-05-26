@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     // Calculate order summary
     const orderItems = items.map((item: { productId: string; quantity: number; size: string }) => {
-      const product = productMap.get(item.productId);
+      const product = productMap.get(item.productId) as { name: string; price: number; images: string[] } | undefined;
       if (!product) {
         throw new Error(`Product not found: ${item.productId}`);
       }
