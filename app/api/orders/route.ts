@@ -25,34 +25,20 @@ export async function GET(req: Request) {
             product: {
               select: {
                 name: true,
+                price: true,
                 images: true,
               },
             },
           },
         },
+        customJersey: true,
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    // Transform the orders to match the expected format
-    const transformedOrders = orders.map((order: { id: string; status: string; total: number; createdAt: Date; items: Array<{ id: string; product: { name: string; images: string[] }; quantity: number; size: string; price: number }> }) => ({
-      id: order.id,
-      orderNumber: order.id.slice(-6),
-      status: order.status,
-      total: order.total,
-      createdAt: order.createdAt,
-      items: order.items.map((item) => ({
-        id: item.id,
-        name: item.product.name,
-        quantity: item.quantity,
-        price: item.price,
-        image: item.product.images[0] || "/placeholder.png",
-      })),
-    }));
-
-    return NextResponse.json(transformedOrders);
+    return NextResponse.json({ orders });
   } catch (error) {
     console.error("[ORDERS_GET]", error);
     return NextResponse.json(

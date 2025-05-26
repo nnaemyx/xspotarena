@@ -32,6 +32,7 @@ export default function OrdersPage() {
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -41,18 +42,27 @@ export default function OrdersPage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No token found");
+        setError("Please login to view your orders");
+        setLoading(false);
+        return;
       }
 
       const res = await fetch("/api/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch orders");
+      if (!res.ok) {
+        throw new Error("Failed to fetch orders");
+      }
 
       const data = await res.json();
+      if (!data.orders) {
+        throw new Error("Invalid response format");
+      }
       setOrders(data.orders);
     } catch (error) {
+      console.error("Error fetching orders:", error);
+      setError("Failed to fetch orders. Please try again later.");
       toast({
         title: "Error",
         description: "Failed to fetch orders",
@@ -68,14 +78,32 @@ export default function OrdersPage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-red-500">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">My Orders</h1>
 
-      {orders.length === 0 ? (
+      {!orders || orders.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">
