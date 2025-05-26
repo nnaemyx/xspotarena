@@ -167,7 +167,7 @@ export async function DELETE(req: Request) {
     }
 
     // Check if the item exists in the cart
-    const cartItem = cart.items.find(item => item.id === itemId);
+    const cartItem = cart.items.find((item: { id: string }) => item.id === itemId);
     if (!cartItem) {
       return NextResponse.json(
         { error: "Item not found in cart" },
