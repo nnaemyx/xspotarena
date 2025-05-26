@@ -97,7 +97,7 @@ export async function PUT(
       data: {
         items: {
           deleteMany: {},
-          create: items.map((item: { productId: string; quantity: number; size: string }) => ({
+          create: items.map((item: { productId: string; quantity: number; size: string; price?: number }) => ({
             productId: item.productId,
             quantity: item.quantity,
             size: item.size,
