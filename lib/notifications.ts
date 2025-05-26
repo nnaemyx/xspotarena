@@ -98,7 +98,7 @@ export class NotificationService {
 
       // Send notifications to each admin
       const notifications = await Promise.all(
-        admins.map((admin: any) =>
+        admins.map((admin: { id: string; email: string }) =>
           this.sendInAppNotification({
             ...data,
             userId: admin.id,
@@ -108,7 +108,7 @@ export class NotificationService {
 
       // Send email notifications to admins
       const emailNotifications = await Promise.all(
-        admins.map((admin: any) =>
+        admins.map((admin: { id: string; email: string }) =>
           this.sendEmailNotification({
             ...data,
             userId: admin.id,
