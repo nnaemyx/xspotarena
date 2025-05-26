@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Order, OrderItem, User } from "@prisma/client";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
@@ -18,14 +17,29 @@ async function retryOperation<T>(operation: () => Promise<T>, retries = MAX_RETR
   }
 }
 
-type OrderWithRelations = Order & {
-  user: Pick<User, 'name' | 'email'>;
-  items: (OrderItem & {
+type OrderWithRelations = {
+  id: string;
+  userId: string;
+  total: number;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user: {
+    name: string;
+    email: string;
+  };
+  items: Array<{
+    id: string;
+    orderId: string;
+    productId: string;
+    quantity: number;
+    size: string;
+    price: number;
     product: {
       name: string;
       images: string[];
     };
-  })[];
+  }>;
   shippingAddress: {
     address: string;
     phone: string;
