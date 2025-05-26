@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
     // Calculate total
     const subtotal = cart.items.reduce(
-      (sum, item) => sum + (item.product.price * item.quantity),
+      (sum: number, item) => sum + (item.product.price * item.quantity),
       0
     );
     const shipping = subtotal > 0 ? 10 : 0;
