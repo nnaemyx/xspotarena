@@ -89,7 +89,7 @@ export async function POST(req: Request) {
           }
         },
         items: {
-          create: cart.items.map(item => ({
+          create: cart.items.map((item: { productId: string; quantity: number; size: string; product: { price: number } }) => ({
             productId: item.productId,
             quantity: item.quantity,
             size: item.size,
