@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     });
 
     // Transform the orders to match the expected format
-    const transformedOrders = orders.map((order) => ({
+    const transformedOrders = orders.map((order: { id: string; status: string; total: number; createdAt: Date; items: Array<{ id: string; product: { name: string; images: string[] }; quantity: number; size: string; price: number }> }) => ({
       id: order.id,
       orderNumber: order.id.slice(-6),
       status: order.status,
