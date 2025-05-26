@@ -46,7 +46,7 @@ export async function GET(req: Request) {
         createdAt: 'asc',
       },
       take: 7,
-    }).then(orders => orders.map(order => ({
+    }).then((orders: { createdAt: Date; _count: { id: number } }[]) => orders.map(order => ({
       date: new Date(order.createdAt).toLocaleDateString(),
       total: order._count.id,
     })));
@@ -57,7 +57,7 @@ export async function GET(req: Request) {
       _count: {
         id: true,
       },
-    }).then(statuses => statuses.map(status => ({
+    }).then((statuses: { status: string; _count: { id: number } }[]) => statuses.map(status => ({
       status: status.status,
       count: status._count.id,
     })));
