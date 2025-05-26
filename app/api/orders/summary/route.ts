@@ -40,11 +40,11 @@ export async function POST(req: Request) {
 
     // Create a map of products for easy lookup
     const productMap = new Map(
-      products.map((product) => [product.id, product])
+      products.map((product: { id: string; name: string; price: number; images: string[] }) => [product.id, product])
     );
 
     // Calculate order summary
-    const orderItems = items.map((item) => {
+    const orderItems = items.map((item: { productId: string; quantity: number; size: string }) => {
       const product = productMap.get(item.productId);
       if (!product) {
         throw new Error(`Product not found: ${item.productId}`);
