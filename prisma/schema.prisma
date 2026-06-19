@@ -24,6 +24,7 @@ model User {
   blogPosts     BlogPost[]
   products      Product[]
   customJerseyRequests CustomJerseyRequest[]
+  reviews       Review[]
   resetToken    String?
   resetTokenExpiry DateTime?
   otp           String?
@@ -222,4 +223,18 @@ enum ProductCategory {
 enum StockStatus {
   IN_STOCK
   OUT_OF_STOCK
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  user      User?    @relation(fields: [userId], references: [id])
+  name      String
+  role      String   @default("Customer")
+  image     String   @default("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop")
+  rating    Int
+  comment   String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 } 

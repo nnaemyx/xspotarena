@@ -2,10 +2,20 @@
 
 import { Star, Users, Award, ThumbsUp } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { useEffect, useState } from "react";
 
-const testimonials = [
+interface Testimonial {
+  id: string | number;
+  name: string;
+  role: string;
+  image: string;
+  text: string;
+  rating: number;
+}
+
+const staticTestimonials: Testimonial[] = [
   {
-    id: 1,
+    id: "static-1",
     name: "Sarah Johnson",
     role: "Team Captain",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2787&auto=format&fit=crop",
@@ -13,7 +23,7 @@ const testimonials = [
     rating: 5,
   },
   {
-    id: 2,
+    id: "static-2",
     name: "Michael Chen",
     role: "Sports Club Manager",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2787&auto=format&fit=crop",
@@ -21,7 +31,7 @@ const testimonials = [
     rating: 5,
   },
   {
-    id: 3,
+    id: "static-3",
     name: "Emma Rodriguez",
     role: "Fitness Instructor",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2940&auto=format&fit=crop",
@@ -55,6 +65,44 @@ const stats = [
 ];
 
 export default function WhyChooseUs() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(staticTestimonials);
+
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const res = await fetch("/api/reviews");
+        if (res.ok) {
+          const reviewsData = await res.json();
+          if (Array.isArray(reviewsData) && reviewsData.length > 0) {
+            // Map review data to match Testimonial interface
+            const mappedReviews: Testimonial[] = reviewsData.map((r: any) => ({
+              id: r.id,
+              name: r.name,
+              role: r.role,
+              image: r.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
+              text: r.comment,
+              rating: r.rating,
+            }));
+
+            // Merge dynamic and static reviews (ensuring at least 3 items in the carousel)
+            if (mappedReviews.length >= 3) {
+              setTestimonials(mappedReviews);
+            } else {
+              setTestimonials([
+                ...mappedReviews,
+                ...staticTestimonials.slice(0, 3 - mappedReviews.length)
+              ]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading homepage reviews:", error);
+      }
+    }
+
+    fetchReviews();
+  }, []);
+
   return (
     <section className="py-24 bg-white border-t border-zinc-200 relative overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
