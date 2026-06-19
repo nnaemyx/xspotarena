@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Sparkles } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
@@ -70,7 +70,7 @@ export default function FeaturedProducts() {
         body: JSON.stringify({
           productId,
           quantity: 1,
-          size: size || "M", // Default to Medium if no size specified
+          size: size || "M",
         }),
       });
 
@@ -93,12 +93,12 @@ export default function FeaturedProducts() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="animate-pulse">
-            <div className="bg-gray-200 h-48 rounded-lg mb-4" />
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="animate-pulse bg-zinc-50 border border-zinc-200 p-4 rounded-none">
+            <div className="bg-zinc-100 h-64 rounded-none mb-4" />
+            <div className="h-4 bg-zinc-200 rounded-none w-3/4 mb-2" />
+            <div className="h-4 bg-zinc-200 rounded-none w-1/2" />
           </div>
         ))}
       </div>
@@ -106,56 +106,71 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8">Featured Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="group relative bg-white rounded-lg shadow-sm overflow-hidden"
-            >
+    <div className="space-y-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2 block flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-black" /> Curated Pitchwear
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black uppercase text-black tracking-tight">Featured Kits</h2>
+        </div>
+        <Link href="/products" className="text-xs uppercase tracking-wider text-black border-b border-black font-bold pb-1 hover:border-transparent transition-all">
+          View All Kits &rarr;
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className="group relative bg-white border border-zinc-200 hover:border-black overflow-hidden transition-all duration-300 flex flex-col justify-between"
+          >
+            {/* Image section */}
+            <div className="relative overflow-hidden aspect-[4/5] bg-zinc-50">
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-full h-64 object-cover"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="p-4">
-                <h3 className="font-semibold">{product.name}</h3>
-                <p className="text-sm text-gray-600 mt-1">{product.description}</p>
-                <p className="text-lg font-bold mt-2">₦{product.price.toLocaleString()}</p>
-                <p className={`text-sm ${
-                  product.stockStatus === "IN_STOCK" && product.stock > 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}>
-                  {product.stockStatus === "IN_STOCK" && product.stock > 0
-                    ? `${product.stock} in stock`
-                    : "Out of stock"}
-                </p>
+              <div className="absolute top-3 right-3 bg-black text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-widest">
+                {product.category.replace("_", " ")}
               </div>
-              <Button
-                className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => {
-                  // If product has sizes, redirect to product page
-                  if (product.sizes && product.sizes.length > 0) {
-                    router.push(`/products/${product.id}`);
-                  } else {
-                    // If no sizes, add directly to cart with default size
-                    addToCart(product.id, "M");
-                  }
-                }}
-                disabled={product.stockStatus === "OUT_OF_STOCK" || product.stock === 0}
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                {product.stockStatus === "OUT_OF_STOCK" || product.stock === 0
-                  ? "Out of Stock"
-                  : "Add to Cart"}
-              </Button>
             </div>
-          ))}
-        </div>
+
+            {/* Info Section */}
+            <div className="p-5 flex-grow flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-zinc-900 text-sm group-hover:text-zinc-500 transition-colors line-clamp-1 uppercase tracking-wide">{product.name}</h3>
+                <p className="text-xs text-zinc-500 mt-1.5 line-clamp-2 leading-relaxed">{product.description}</p>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-zinc-150 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-zinc-400 uppercase tracking-widest">Price</p>
+                  <p className="text-base font-bold text-black">₦{product.price.toLocaleString()}</p>
+                </div>
+                
+                <div>
+                  <Button
+                    size="sm"
+                    className="bg-black hover:bg-zinc-900 text-white rounded-none h-9 w-9 p-0 flex items-center justify-center transition-all duration-300"
+                    onClick={() => {
+                      if (product.sizes && product.sizes.length > 0) {
+                        router.push(`/products/${product.id}`);
+                      } else {
+                        addToCart(product.id, "M");
+                      }
+                    }}
+                    disabled={product.stockStatus === "OUT_OF_STOCK" || product.stock === 0}
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
-} 
+}

@@ -66,14 +66,14 @@ export class NotificationService {
           <p style="color: #4a5568;">${message}</p>
           ${link ? `<a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #2c5282; color: white; text-decoration: none; border-radius: 5px;">View Details</a>` : ''}
           <p style="color: #718096; font-size: 12px; margin-top: 20px;">
-            This is an automated message from XSpot. Please do not reply to this email.
+            This is an automated message from Calcio Threads. Please do not reply to this email.
           </p>
         </div>
       `;
 
       // Send email using Resend
       await resend.emails.send({
-        from: 'XSpot <notifications@xspot.com>',
+        from: 'Calcio Threads <notifications@calciothreads.com>',
         to: user.email,
         subject: title,
         html: emailContent,

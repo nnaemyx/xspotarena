@@ -131,6 +131,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     setUser(null);
     toast({
       title: "Logged out successfully",
@@ -144,54 +145,46 @@ export default function Navbar() {
   };
 
   return (
-    <nav className=" fixed w-full bg-black z-50 top-0 left-0">
-      <div className="container mx-auto px-4">
-        <div className="flex h-[4rem] md:h-[6rem] items-center justify-between">
+    <nav className="fixed w-full bg-white/90 backdrop-blur-md border-b border-gray-100 z-50 top-0 left-0 shadow-sm transition-all duration-300">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex h-16 md:h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="hidden md:flex">
+          <Link href="/" className="flex items-center hover:opacity-85 transition-opacity">
             <Image
               src={Logo}
-              alt="Jersey Store Logo"
-              width={200}
-              height={40}
-              className="w-auto"
-            />
-          </Link>
-          <Link href="/" className="md:hidden flex">
-            <Image
-              src={Logo}
-              alt="Jersey Store Logo"
-              width={120}
-              height={40}
-              className="w-auto"
+              alt="Calcio Threads Logo"
+              width={140}
+              height={28}
+              className="w-auto h-6 md:h-8 object-contain filter invert-0"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-10">
             <Link
               href="/products"
-              className={`text-sm font-medium ${
-                pathname === "/products" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`text-sm font-semibold tracking-wide transition-colors duration-300 relative py-1 ${pathname === "/products"
+                ? "text-black after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-black"
+                : "text-zinc-500 hover:text-black"
+                }`}
             >
               Products
             </Link>
             <Link
               href="/custom-jersey"
-              className={`text-sm font-medium ${
-                pathname === "/custom-jersey"
-                  ? "text-[#FFD700]"
-                  : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`text-sm font-semibold tracking-wide transition-colors duration-300 relative py-1 ${pathname === "/custom-jersey"
+                ? "text-black after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-black"
+                : "text-zinc-500 hover:text-black"
+                }`}
             >
               Custom Jersey
             </Link>
             <Link
               href="/blog"
-              className={`text-sm font-medium ${
-                pathname === "/blog" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-              }`}
+              className={`text-sm font-semibold tracking-wide transition-colors duration-300 relative py-1 ${pathname === "/blog"
+                ? "text-black after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-black"
+                : "text-zinc-500 hover:text-black"
+                }`}
             >
               Blog
             </Link>
@@ -200,43 +193,43 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/cart">
-              <Button variant={pathname === "/cart" ? "default" : "ghost"} className="relative text-white hover:text-[#FFD700]">
+              <Button variant="ghost" size="icon" className={`relative rounded-full hover:bg-gray-100 ${pathname === "/cart" ? "text-black bg-gray-50" : "text-zinc-700 hover:text-black"}`}>
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[#FFD700] text-black text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-bold rounded-full h-4.5 w-4.5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
               </Button>
             </Link>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative text-white hover:text-[#FFD700]">
+                <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-gray-100 text-zinc-700 hover:text-black">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#FFD700] text-black">
+                    <Badge className="absolute -top-1 -right-1 h-4.5 w-4.5 flex items-center justify-center p-0 bg-black text-white text-[10px] font-bold rounded-full">
                       {unreadCount}
                     </Badge>
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-black border-[#FFD700]">
+              <DropdownMenuContent align="end" className="w-80 bg-white border border-gray-150 text-black rounded-xl shadow-xl">
                 {notifications.length === 0 ? (
-                  <DropdownMenuItem className="text-white">
+                  <DropdownMenuItem className="text-zinc-400 focus:bg-gray-50 focus:text-black cursor-default py-3">
                     No notifications
                   </DropdownMenuItem>
                 ) : (
                   notifications.map((notification) => (
                     <DropdownMenuItem
                       key={notification.id}
-                      className={`cursor-pointer text-white hover:bg-[#1a1a1a] ${
-                        !notification.read ? "bg-[#1a1a1a]" : ""
-                      }`}
+                      className={`cursor-pointer focus:bg-gray-50 focus:text-black border-b border-gray-50 py-3 ${!notification.read ? "bg-gray-50/50" : ""
+                        }`}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                      <div className="flex flex-col gap-1">
-                        <p className="text-sm">{notification.message}</p>
-                        <p className="text-xs text-gray-400">
+                      <div className="flex flex-col gap-1 w-full">
+                        <p className="text-sm text-zinc-800">{notification.message}</p>
+                        <p className="text-[10px] text-zinc-400">
                           {new Date(notification.createdAt).toLocaleString()}
                         </p>
                       </div>
@@ -245,32 +238,33 @@ export default function Navbar() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 {user.role === "ADMIN" ? (
                   <Link href="/admin">
-                    <Button variant="outline" className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-black">
+                    <Button variant="outline" className="border-black text-black hover:bg-black hover:text-white rounded-lg transition-all duration-300 font-semibold px-4 text-xs h-9">
                       Admin Dashboard
                     </Button>
                   </Link>
                 ) : (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center space-x-2 text-white hover:text-[#FFD700]">
-                        <User className="h-5 w-5" />
-                        <span>{user.name}</span>
+                      <Button variant="ghost" className="flex items-center space-x-2 text-zinc-700 hover:text-black hover:bg-gray-100 rounded-full px-3">
+                        <User className="h-5 w-5 text-zinc-500" />
+                        <span className="text-sm font-semibold">{user.name}</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-black border-[#FFD700]">
-                      <DropdownMenuItem onClick={() => router.push("/profile")} className="text-white hover:bg-[#1a1a1a]">
-                        <Settings className="mr-2 h-4 w-4" />
+                    <DropdownMenuContent align="end" className="bg-white border border-gray-150 text-black rounded-xl shadow-xl">
+                      <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer focus:bg-gray-50 focus:text-black">
+                        <Settings className="mr-2 h-4 w-4 text-zinc-500" />
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push("/orders")} className="text-white hover:bg-[#1a1a1a]">
-                        <Package className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem onClick={() => router.push("/orders")} className="cursor-pointer focus:bg-gray-50 focus:text-black">
+                        <Package className="mr-2 h-4 w-4 text-zinc-500" />
                         My Orders
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleLogout} className="text-white hover:bg-[#1a1a1a]">
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer focus:bg-red-50 focus:text-red-600">
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
                       </DropdownMenuItem>
@@ -280,7 +274,7 @@ export default function Navbar() {
               </div>
             ) : (
               <Link href="/login">
-                <Button variant="ghost" size="icon" className="text-white hover:text-[#FFD700]">
+                <Button variant="ghost" size="icon" className="text-zinc-700 hover:text-black rounded-full hover:bg-gray-100">
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
@@ -288,12 +282,12 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center space-x-4">
+          <div className="flex md:hidden items-center space-x-1">
             <Link href="/cart">
-              <Button variant={pathname === "/cart" ? "default" : "ghost"} className="relative text-white hover:text-[#FFD700]">
+              <Button variant="ghost" size="icon" className={`relative rounded-full hover:bg-gray-100 ${pathname === "/cart" ? "text-black bg-gray-50" : "text-zinc-700 hover:text-black"}`}>
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[#FFD700] text-black text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] font-bold rounded-full h-4.5 w-4.5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -301,32 +295,31 @@ export default function Navbar() {
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative text-white hover:text-[#FFD700]">
+                <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-gray-100 text-zinc-700 hover:text-black">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#FFD700] text-black">
+                    <Badge className="absolute -top-1 -right-1 h-4.5 w-4.5 flex items-center justify-center p-0 bg-black text-white text-[10px] font-bold rounded-full">
                       {unreadCount}
                     </Badge>
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-black border-[#FFD700]">
+              <DropdownMenuContent align="end" className="w-80 bg-white border border-gray-150 text-black rounded-xl shadow-xl">
                 {notifications.length === 0 ? (
-                  <DropdownMenuItem className="text-white">
+                  <DropdownMenuItem className="text-zinc-400">
                     No notifications
                   </DropdownMenuItem>
                 ) : (
                   notifications.map((notification) => (
                     <DropdownMenuItem
                       key={notification.id}
-                      className={`cursor-pointer text-white hover:bg-[#1a1a1a] ${
-                        !notification.read ? "bg-[#1a1a1a]" : ""
-                      }`}
+                      className={`cursor-pointer focus:bg-gray-50 focus:text-black border-b border-gray-50 py-3 ${!notification.read ? "bg-gray-50/50" : ""
+                        }`}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                      <div className="flex flex-col gap-1">
-                        <p className="text-sm">{notification.message}</p>
-                        <p className="text-xs text-gray-400">
+                      <div className="flex flex-col gap-1 w-full">
+                        <p className="text-sm text-zinc-800">{notification.message}</p>
+                        <p className="text-[10px] text-zinc-400">
                           {new Date(notification.createdAt).toLocaleString()}
                         </p>
                       </div>
@@ -335,7 +328,7 @@ export default function Navbar() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="ghost" size="icon" onClick={toggleMenu} className="text-white hover:text-[#FFD700]">
+            <Button variant="ghost" size="icon" onClick={toggleMenu} className="text-zinc-700 hover:text-black rounded-full hover:bg-gray-100">
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
@@ -343,41 +336,39 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-[#FFD700]">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="md:hidden border-t border-gray-100 py-4 animate-in slide-in-from-top duration-300">
+            <div className="flex flex-col space-y-3 px-2">
               <Link
                 href="/products"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  pathname === "/products" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-                }`}
+                className={`px-3 py-2.5 rounded-lg text-base font-semibold ${pathname === "/products" ? "text-black bg-gray-50" : "text-zinc-600 hover:text-black"
+                  }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
               </Link>
               <Link
                 href="/custom-jersey"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  pathname === "/custom-jersey" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-                }`}
+                className={`px-3 py-2.5 rounded-lg text-base font-semibold ${pathname === "/custom-jersey" ? "text-black bg-gray-50" : "text-zinc-600 hover:text-black"
+                  }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Custom Jersey
               </Link>
               <Link
                 href="/blog"
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  pathname === "/blog" ? "text-[#FFD700]" : "text-white hover:text-[#FFD700]"
-                }`}
+                className={`px-3 py-2.5 rounded-lg text-base font-semibold ${pathname === "/blog" ? "text-black bg-gray-50" : "text-zinc-600 hover:text-black"
+                  }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
+
               {user ? (
                 <>
                   {user.role === "ADMIN" ? (
                     <Link
                       href="/admin"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-[#FFD700]"
+                      className="px-3 py-2.5 rounded-lg text-base font-semibold text-black bg-zinc-100"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Admin Dashboard
@@ -386,14 +377,14 @@ export default function Navbar() {
                     <>
                       <Link
                         href="/profile"
-                        className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-[#FFD700]"
+                        className="px-3 py-2.5 rounded-lg text-base font-semibold text-zinc-600 hover:text-black"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Profile
                       </Link>
                       <Link
                         href="/orders"
-                        className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-[#FFD700]"
+                        className="px-3 py-2.5 rounded-lg text-base font-semibold text-zinc-600 hover:text-black"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         My Orders
@@ -405,7 +396,7 @@ export default function Navbar() {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:text-[#FFD700]"
+                    className="block w-full text-left px-3 py-2.5 rounded-lg text-base font-semibold text-red-500 hover:bg-red-50"
                   >
                     Logout
                   </button>
@@ -413,10 +404,10 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-[#FFD700]"
+                  className="px-3 py-2.5 rounded-lg text-base font-semibold text-zinc-600 hover:text-black"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Login
+                  Login / Register
                 </Link>
               )}
             </div>
@@ -425,4 +416,4 @@ export default function Navbar() {
       </div>
     </nav>
   );
-} 
+}

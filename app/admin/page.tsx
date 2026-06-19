@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import {  Package, Users, ShoppingCart, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Package, Users, ShoppingCart, FileText, Trash2, Award, UserPlus, Sparkles } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -131,9 +132,9 @@ export default function AdminDashboard() {
         notificationsRes.json(),
       ]);
 
-      setOrders(ordersData.orders);
-      setMessages(messagesData.messages);
-      setNotifications(notificationsData.notifications);
+      setOrders(ordersData.orders || []);
+      setMessages(messagesData.messages || []);
+      setNotifications(notificationsData.notifications || []);
     } catch (error) {
       toast({
         title: "Error",
@@ -199,7 +200,7 @@ export default function AdminDashboard() {
       }
 
       const data = await res.json();
-      setUsers(data.users);
+      setUsers(data.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -221,7 +222,10 @@ export default function AdminDashboard() {
         throw new Error("Failed to update user role");
       }
 
-      // Refresh users list
+      toast({
+        title: "Role updated",
+        description: `Successfully changed user role to ${newRole}`,
+      });
       fetchUsers();
     } catch (error) {
       console.error("Error updating user role:", error);
@@ -230,6 +234,8 @@ export default function AdminDashboard() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
+      if (!confirm("Are you sure you want to delete this user?")) return;
+      
       const token = localStorage.getItem("token");
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "DELETE",
@@ -242,7 +248,10 @@ export default function AdminDashboard() {
         throw new Error("Failed to delete user");
       }
 
-      // Refresh users list
+      toast({
+        title: "User deleted",
+        description: "The user has been deleted successfully",
+      });
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -254,146 +263,180 @@ export default function AdminDashboard() {
       title: "Total Products",
       value: stats.totalProducts,
       icon: Package,
-      color: "text-blue-500",
     },
     {
       title: "Total Customers",
       value: stats.totalCustomers,
       icon: Users,
-      color: "text-green-500",
     },
     {
       title: "Total Orders",
       value: stats.totalOrders,
       icon: ShoppingCart,
-      color: "text-purple-500",
     },
     {
       title: "Total Messages",
       value: stats.totalMessages,
       icon: FileText,
-      color: "text-orange-500",
     },
   ];
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="space-y-6 mt-6">
-        <h2 className="text-2xl font-bold">Dashboard Overview</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <Icon className={`h-4 w-4 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                </CardContent>
-              </Card>
-            );
-          })}
+    <div className="space-y-10">
+      {/* Title */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
+        <div>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold flex items-center gap-1.5 mb-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-black" /> Management Center
+          </span>
+          <h2 className="text-3xl font-black uppercase text-black tracking-tight">Overview Dashboard</h2>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={stats.recentOrders}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="total"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.title} className="bg-white border border-zinc-200 rounded-none shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                  {stat.title}
+                </CardTitle>
+                <div className="p-2 bg-zinc-50 border border-zinc-150">
+                  <Icon className="h-4 w-4 text-black" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-black text-black tracking-tight">{stat.value}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Status Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.orderStatus}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="status" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="bg-white border border-zinc-200 rounded-none shadow-sm p-6">
+          <CardHeader className="p-0 pb-6">
+            <CardTitle className="text-xs font-black uppercase tracking-wider text-black">Order Sales Trends (₦)</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={stats.recentOrders}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+                  <XAxis dataKey="date" stroke="#71717a" fontSize={11} />
+                  <YAxis stroke="#71717a" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e4e4e7", borderRadius: "0px" }}
+                    labelStyle={{ color: "#000000", fontWeight: "bold" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#000000"
+                    strokeWidth={2}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border border-zinc-200 rounded-none shadow-sm p-6">
+          <CardHeader className="p-0 pb-6">
+            <CardTitle className="text-xs font-black uppercase tracking-wider text-black">Order Status Metrics</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.orderStatus}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+                  <XAxis dataKey="status" stroke="#71717a" fontSize={11} />
+                  <YAxis stroke="#71717a" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e4e4e7", borderRadius: "0px" }}
+                    itemStyle={{ color: "#000000" }}
+                  />
+                  <Bar dataKey="count" fill="#000000" radius={[0, 0, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Users Section */}
+      <div className="bg-white border border-zinc-200 rounded-none shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xs font-black uppercase tracking-wider text-black flex items-center gap-2">
+            <Users className="h-4 w-4 text-black" /> Registered User Accounts
+          </h2>
+          <Badge className="bg-black text-white text-[10px] font-bold px-2.5 py-0.5 rounded-none uppercase tracking-widest">
+            {users.length} Users
+          </Badge>
         </div>
-
-        {/* Users Section */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Users</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        
+        <div className="overflow-x-auto rounded-none border border-zinc-200">
+          <table className="min-w-full divide-y divide-zinc-200">
+            <thead className="bg-zinc-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Email Address</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Access Role</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Orders Placed</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200 bg-white">
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-zinc-500">
+                    No users registered in the database.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="hover:bg-zinc-50/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-zinc-950">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <select
                         value={user.role}
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        className="border rounded px-2 py-1"
+                        className="bg-white border border-zinc-200 rounded-none px-2.5 py-1 text-xs text-black font-bold uppercase tracking-wider focus:outline-none focus:border-black transition-colors cursor-pointer"
                       >
                         <option value="USER">User</option>
                         <option value="ADMIN">Admin</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">{user._count.orders}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-800 font-bold">{user._count?.orders || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       <button
                         onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="inline-flex items-center gap-1.5 text-red-600 hover:text-white bg-transparent hover:bg-red-600 border border-red-200 hover:border-red-600 rounded-none px-3 py-1.5 transition-all font-bold text-xs uppercase tracking-wider"
                       >
-                        Delete
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete Account
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
-} 
+}

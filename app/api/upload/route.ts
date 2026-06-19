@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     formDataToSend.append('api_key', process.env.CLOUDINARY_API_KEY!);
     formDataToSend.append('timestamp', timestamp.toString());
     formDataToSend.append('signature', signature);
-    formDataToSend.append('folder', 'xspot arena');
+    formDataToSend.append('folder', 'calcio threads');
 
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
 }
 
 async function generateSignature(timestamp: number) {
-  const message = `folder=xspot arena&timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`;
+  const message = `folder=calcio threads&timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`;
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));

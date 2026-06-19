@@ -17,7 +17,7 @@ const testimonials = [
     name: "Michael Chen",
     role: "Sports Club Manager",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2787&auto=format&fit=crop",
-    text: "XSpot delivered our order ahead of schedule, and the attention to detail in the customization was impressive. Highly recommended!",
+    text: "Calcio Threads delivered our order ahead of schedule, and the attention to detail in the customization was impressive. Highly recommended!",
     rating: 5,
   },
   {
@@ -35,57 +35,58 @@ const stats = [
     icon: Users,
     value: "10K+",
     label: "Happy Customers",
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-black group-hover:text-white",
+    bgColor: "bg-white border border-zinc-200 group-hover:bg-black group-hover:border-black",
   },
   {
     icon: Award,
     value: "5K+",
     label: "Team Orders",
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+    color: "text-black group-hover:text-white",
+    bgColor: "bg-white border border-zinc-200 group-hover:bg-black group-hover:border-black",
   },
   {
     icon: ThumbsUp,
     value: "98%",
     label: "Satisfaction Rate",
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
+    color: "text-black group-hover:text-white",
+    bgColor: "bg-white border border-zinc-200 group-hover:bg-black group-hover:border-black",
   },
 ];
 
 export default function WhyChooseUs() {
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose XSpot?</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Join thousands of satisfied customers who trust us for their team's jersey needs.
-            Experience the perfect blend of quality, customization, and service.
+    <section className="py-24 bg-white border-t border-zinc-200 relative overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="text-center mb-20">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-3 block">Orchestrated to Perfection</span>
+          <h2 className="text-3xl md:text-5xl font-black uppercase mb-6 text-black tracking-tight">Why Choose Calcio Threads?</h2>
+          <div className="h-px w-12 bg-black mx-auto mb-6" />
+          <p className="text-zinc-600 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+            Join thousands of players and managers who trust us for elite quality, bespoke customization, and championship-level service.
           </p>
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="flex items-center justify-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              className="group flex items-center justify-center p-8 bg-zinc-50 border border-zinc-200 hover:border-black transition-all duration-300"
             >
-              <div className={`p-4 rounded-full ${stat.bgColor} mr-4`}>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+              <div className={`p-4 ${stat.bgColor} mr-5 transition-all duration-300`}>
+                <stat.icon className={`h-6 w-6 ${stat.color} transition-colors duration-300`} />
               </div>
               <div>
-                <div className="text-3xl font-bold mb-1">{stat.value}</div>
-                <div className="text-gray-600">{stat.label}</div>
+                <div className="text-3xl font-black text-black mb-1 tracking-tight">{stat.value}</div>
+                <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">{stat.label}</div>
               </div>
             </div>
           ))}
         </div>
 
         {/* Testimonials */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Carousel
             className="w-full"
             autoPlay={true}
@@ -96,27 +97,30 @@ export default function WhyChooseUs() {
               containScroll: "trimSnaps",
             }}
           >
-            <CarouselContent>
+            <CarouselContent className="-ml-4">
               {testimonials.map((testimonial) => (
-                <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow h-full">
-                    <div className="flex items-center mb-4">
+                <CarouselItem key={testimonial.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <div className="p-8 bg-white border border-zinc-200 hover:border-black transition-all duration-300 h-full flex flex-col justify-between">
+                    <div>
+                      <div className="flex mb-5">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="h-3.5 w-3.5 text-black fill-black mr-1" />
+                        ))}
+                      </div>
+                      <p className="text-zinc-600 italic text-xs leading-relaxed mb-6">"{testimonial.text}"</p>
+                    </div>
+                    
+                    <div className="flex items-center pt-4 border-t border-zinc-100">
                       <img
                         src={testimonial.image}
                         alt={testimonial.name}
-                        className="w-12 h-12 rounded-full object-cover mr-4"
+                        className="w-10 h-10 rounded-full object-cover mr-4 border border-zinc-200"
                       />
                       <div>
-                        <h4 className="font-semibold">{testimonial.name}</h4>
-                        <p className="text-sm text-gray-600">{testimonial.role}</p>
+                        <h4 className="font-bold text-zinc-950 text-sm">{testimonial.name}</h4>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">{testimonial.role}</p>
                       </div>
                     </div>
-                    <div className="flex mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                      ))}
-                    </div>
-                    <p className="text-gray-600 italic">"{testimonial.text}"</p>
                   </div>
                 </CarouselItem>
               ))}
@@ -126,4 +130,4 @@ export default function WhyChooseUs() {
       </div>
     </section>
   );
-} 
+}

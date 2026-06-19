@@ -55,8 +55,8 @@ export async function POST(req: Request) {
       { expiresIn: "7d" }
     );
 
-    // Return token in response body
-    return NextResponse.json({
+    // Return token in response body and set cookie
+    const response = NextResponse.json({
       message: "Login successful",
       token,
       user: {
@@ -66,6 +66,17 @@ export async function POST(req: Request) {
         role: user.role
       }
     });
+
+    response.cookies.set({
+      name: "auth-token",
+      value: token,
+      httpOnly: false, // Allows frontend to clear it on logout
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(

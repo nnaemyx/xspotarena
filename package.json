@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/package.json",
-  "name": "jersey",
+  "name": "calcio-threads",
   "version": "0.1.0",
   "private": true,
   "scripts": {

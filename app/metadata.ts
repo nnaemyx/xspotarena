@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Jersey Store - Premium Sports Jerseys",
-  description: "Shop the latest sports jerseys from top brands. Authentic jerseys for football, basketball, soccer, and more.",
-  keywords: "sports jerseys, football jerseys, basketball jerseys, soccer jerseys, authentic jerseys",
-  authors: [{ name: "Jersey Store" }],
-  creator: "Jersey Store",
-  publisher: "Jersey Store",
+  title: "Calcio Threads - Premium Custom Football Jerseys",
+  description: "Shop the latest sports jerseys and orchestrate your custom team designs. Authentic jerseys for football, custom kits, retro classics.",
+  keywords: "sports jerseys, football jerseys, soccer jerseys, custom jerseys, custom kits, retro jerseys, calcio threads",
+  authors: [{ name: "Calcio Threads" }],
+  creator: "Calcio Threads",
+  publisher: "Calcio Threads",
   formatDetection: {
     email: false,
     address: false,
@@ -16,16 +16,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://jersey-store.vercel.app",
-    title: "Jersey Store - Premium Sports Jerseys",
-    description: "Shop the latest sports jerseys from top brands. Authentic jerseys for football, basketball, soccer, and more.",
-    siteName: "Jersey Store",
+    url: "https://calcio-threads.vercel.app",
+    title: "Calcio Threads - Premium Custom Football Jerseys",
+    description: "Shop the latest sports jerseys and orchestrate your custom team designs. Authentic jerseys for football, custom kits, retro classics.",
+    siteName: "Calcio Threads",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jersey Store - Premium Sports Jerseys",
-    description: "Shop the latest sports jerseys from top brands. Authentic jerseys for football, basketball, soccer, and more.",
-    creator: "@jerseystore",
+    title: "Calcio Threads - Premium Custom Football Jerseys",
+    description: "Shop the latest sports jerseys and orchestrate your custom team designs. Authentic jerseys for football, custom kits, retro classics.",
+    creator: "@calciothreads",
   },
   robots: {
     index: true,
@@ -44,4 +44,4 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
-}; 
+};
