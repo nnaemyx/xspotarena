@@ -3,8 +3,7 @@ import { verifyAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{}> }
+  request: Request
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -52,8 +51,7 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{}> }
+  request: Request
 ) {
   try {
     const token = request.headers.get("Authorization")?.split(" ")[1];
