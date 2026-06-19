@@ -151,7 +151,7 @@ export default function AdminOrdersPage() {
         {orders.map((order) => (
           <Card key={order.id}>
             <CardHeader>
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <CardTitle>Order #{order.id.slice(-6)}</CardTitle>
                   <CardDescription>
@@ -162,7 +162,7 @@ export default function AdminOrdersPage() {
                   value={order.status}
                   onValueChange={(value) => handleStatusChange(order.id, value)}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
