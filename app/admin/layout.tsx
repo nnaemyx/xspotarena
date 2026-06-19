@@ -205,14 +205,14 @@ export default function AdminLayout({
       {/* Mobile Drawer Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden mt-16"
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden mt-16"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar (Responsive drawer on mobile, static on desktop) */}
       <aside 
-        className={`fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-zinc-200 pt-6 z-45 transition-transform duration-300 transform lg:translate-x-0 ${
+        className={`fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-zinc-200 pt-6 z-40 transition-transform duration-300 transform lg:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
