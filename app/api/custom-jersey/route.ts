@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
 import { v2 as cloudinary } from "cloudinary";
 import {prisma} from "@/lib/prisma";
 
@@ -11,7 +10,7 @@ cloudinary.config({
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth();
+    const userId = req.headers.get("x-user-id");
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
