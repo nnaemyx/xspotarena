@@ -118,6 +118,8 @@ export async function POST(
       req.end();
     });
 
+    console.log("[PAYMENT_INITIALIZE] Paystack Response:", paystackResponse);
+
     if (!paystackResponse.status || !paystackResponse.data?.authorization_url) {
       throw new Error("Failed to initialize payment with Paystack");
     }

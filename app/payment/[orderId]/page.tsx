@@ -6,6 +6,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+// Replace this with your actual WhatsApp Business phone number (with country code, e.g. "2348012345678")
+const WHATSAPP_NUMBER = "2349046764236";
+
 interface OrderDetails {
   id: string;
   total: number;
@@ -111,7 +114,7 @@ export default function PaymentPage({ params }: { params: Promise<{ orderId: str
       }
 
       const { paymentUrl } = await response.json();
-      
+
       // Redirect to payment page
       window.location.href = paymentUrl;
     } catch (error) {
@@ -124,6 +127,14 @@ export default function PaymentPage({ params }: { params: Promise<{ orderId: str
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWhatsAppPayment = () => {
+    if (!order) return;
+    const message = `Hello Calcio Threads! I've placed order #${order.id} for ₦${order.total.toLocaleString()} and would like to complete my payment via bank transfer.`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    window.open(whatsappUrl, "_blank");
   };
 
   if (!order) {
@@ -168,7 +179,7 @@ export default function PaymentPage({ params }: { params: Promise<{ orderId: str
         <div>
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
-            <div className="space-y-2">
+            <div className="space-y-2 mb-6">
               <p><strong>Name:</strong> {order.shippingAddress.fullName}</p>
               <p><strong>Address:</strong> {order.shippingAddress.address}</p>
               <p>
@@ -178,13 +189,34 @@ export default function PaymentPage({ params }: { params: Promise<{ orderId: str
               <p><strong>Country:</strong> {order.shippingAddress.country}</p>
             </div>
 
-            <Button
-              onClick={handlePayment}
-              className="w-full mt-6"
-              disabled={loading}
-            >
-              {loading ? "Processing..." : "Pay Now"}
-            </Button>
+            <div className="border-t pt-6 space-y-4">
+              <h3 className="text-base font-bold text-zinc-900">Select Payment Method</h3>
+
+              {/* Option 1: Paystack */}
+              <div className="p-4 border border-zinc-200 hover:border-black rounded-lg transition duration-200">
+                <h4 className="font-bold text-sm text-black mb-1">Pay Online Instantly</h4>
+                <p className="text-xs text-zinc-500 mb-4">Secure checkout via Card, USSD, or Bank Transfer using Paystack.</p>
+                <Button
+                  onClick={handlePayment}
+                  className="w-full bg-black hover:bg-zinc-800 text-white font-semibold rounded-none"
+                  disabled={loading}
+                >
+                  {loading ? "Processing..." : "Pay with Card / Paystack"}
+                </Button>
+              </div>
+
+              {/* Option 2: WhatsApp Bank Transfer */}
+              <div className="p-4 border border-zinc-200 hover:border-emerald-500 rounded-lg transition duration-200">
+                <h4 className="font-bold text-sm text-black mb-1">Pay via Bank Transfer on WhatsApp</h4>
+                <p className="text-xs text-zinc-500 mb-4">Conclude your purchase manually by chatting with our sales desk on WhatsApp.</p>
+                <Button
+                  onClick={handleWhatsAppPayment}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-none"
+                >
+                  Pay via WhatsApp
+                </Button>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
