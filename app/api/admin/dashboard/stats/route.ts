@@ -71,7 +71,14 @@ export async function GET(
     });
 
     const productDetails = await Promise.all(
-      topProducts.map(async (product: { productId: string; _sum: { quantity: number | null } }) => {
+      topProducts.map(async (product: any) => {
+        if (!product.productId) {
+          return {
+            ...product,
+            name: "Archive Product",
+            price: 0,
+          };
+        }
         const details = await prisma.product.findUnique({
           where: { id: product.productId },
           select: {

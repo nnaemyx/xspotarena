@@ -123,7 +123,9 @@ export default function FeaturedProducts() {
         {products.map((product) => (
           <div
             key={product.id}
-            className="group relative bg-white border border-zinc-200 hover:border-black overflow-hidden transition-all duration-300 flex flex-col justify-between"
+            className={`group relative bg-white border border-zinc-200 hover:border-black overflow-hidden transition-all duration-300 flex flex-col justify-between premium-card-hover ${
+              product.stockStatus === "OUT_OF_STOCK" || product.stock === 0 ? "opacity-75" : ""
+            }`}
           >
             {/* Image section */}
             <div className="relative overflow-hidden aspect-[4/5] bg-zinc-50">
@@ -135,6 +137,11 @@ export default function FeaturedProducts() {
               <div className="absolute top-3 right-3 bg-black text-white text-[9px] font-bold px-2.5 py-1 uppercase tracking-widest">
                 {product.category.replace("_", " ")}
               </div>
+              {(product.stockStatus === "OUT_OF_STOCK" || product.stock === 0) && (
+                <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                  <span className="bg-zinc-900 text-white text-[10px] font-bold px-4 py-1.5 uppercase tracking-widest">Sold Out</span>
+                </div>
+              )}
             </div>
 
             {/* Info Section */}
@@ -147,13 +154,13 @@ export default function FeaturedProducts() {
               <div className="mt-4 pt-4 border-t border-zinc-150 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] text-zinc-400 uppercase tracking-widest">Price</p>
-                  <p className="text-base font-bold text-black">₦{product.price.toLocaleString()}</p>
+                  <p className={`text-base font-bold ${product.stockStatus === "OUT_OF_STOCK" || product.stock === 0 ? "text-zinc-400 line-through" : "text-black"}`}>₦{product.price.toLocaleString()}</p>
                 </div>
                 
                 <div>
                   <Button
                     size="sm"
-                    className="bg-black hover:bg-zinc-900 text-white rounded-none h-9 w-9 p-0 flex items-center justify-center transition-all duration-300"
+                    className="bg-black hover:bg-zinc-900 text-white rounded-none h-9 w-9 p-0 flex items-center justify-center transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={() => {
                       if (product.sizes && product.sizes.length > 0) {
                         router.push(`/products/${product.id}`);

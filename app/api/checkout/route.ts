@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
     // Calculate total
     const subtotal = cart.items.reduce(
-      (sum: number, item: { product: { price: number }; quantity: number }) => sum + (item.product.price * item.quantity),
+      (sum: number, item: any) => sum + ((item.product?.price || 0) * item.quantity),
       0
     );
     const shipping = subtotal > 0 ? 10 : 0;
@@ -89,11 +89,11 @@ export async function POST(req: Request) {
           }
         },
         items: {
-          create: cart.items.map((item: { productId: string; quantity: number; size: string; product: { price: number } }) => ({
+          create: cart.items.map((item: any) => ({
             productId: item.productId,
             quantity: item.quantity,
             size: item.size,
-            price: item.product.price
+            price: item.product?.price || 0
           }))
         }
       }

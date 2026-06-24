@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Package, ShoppingCart, FileText, Bell, MessageSquare, Home, Award, Star, Menu, X } from "lucide-react";
+import { LogOut, LayoutDashboard, Package, ShoppingCart, FileText, Bell, MessageSquare, Home, Award, Star, Menu, X, Users } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -36,6 +36,11 @@ const menuItems = [
     label: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart,
+  },
+  {
+    label: "Customers",
+    href: "/admin/customers",
+    icon: Users,
   },
   {
     label: "Blog",

@@ -101,6 +101,11 @@ export async function DELETE(
       );
     }
 
+    // Clean up transient cart items referencing this product
+    await prisma.cartItem.deleteMany({
+      where: { productId: id },
+    });
+
     await prisma.product.delete({
       where: { id },
     });

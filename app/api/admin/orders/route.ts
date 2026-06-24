@@ -101,7 +101,10 @@ export async function GET(request: Request) {
       user: order.user,
       items: order.items.map((item) => ({
         id: item.id,
-        product: item.product,
+        product: item.product || {
+          name: "Archive Product",
+          images: ["/placeholder.png"],
+        },
         quantity: item.quantity,
         size: item.size,
         price: item.price,

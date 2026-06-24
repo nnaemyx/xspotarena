@@ -28,8 +28,24 @@ export async function GET(req: Request) {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        state: true,
+        address: true,
         role: true,
+        isVerified: true,
         createdAt: true,
+        orders: {
+          select: {
+            id: true,
+            status: true,
+            total: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 5,
+        },
         _count: {
           select: {
             orders: true,

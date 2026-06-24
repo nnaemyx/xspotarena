@@ -51,7 +51,25 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(order);
+    // Provide fallback for deleted/archived products to avoid frontend crashes
+    const transformedOrder = {
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        product: item.product || {
+          name: "Archive Product",
+          price: item.price,
+          images: ["/placeholder.png"],
+          description: "This product has been removed from the active catalog.",
+          category: "HOME_JERSEYS",
+          sizes: ["M"],
+          stockStatus: "OUT_OF_STOCK",
+          stock: 0,
+        },
+      })),
+    };
+
+    return NextResponse.json(transformedOrder);
   } catch (error) {
     console.error("Error fetching order:", error);
     return NextResponse.json(

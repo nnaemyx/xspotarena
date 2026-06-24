@@ -38,7 +38,20 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json({ orders });
+    // Provide fallback for deleted/archived products to avoid frontend crashes
+    const transformedOrders = orders.map((order) => ({
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        product: item.product || {
+          name: "Archive Product",
+          price: item.price,
+          images: ["/placeholder.png"],
+        },
+      })),
+    }));
+
+    return NextResponse.json({ orders: transformedOrders });
   } catch (error) {
     console.error("[ORDERS_GET]", error);
     return NextResponse.json(

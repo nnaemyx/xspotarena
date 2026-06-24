@@ -315,7 +315,7 @@ export default function CheckoutPage() {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? "Processing..." : "Proceed to Payment"}
+                {loading ? "Processing..." : "Complete Order"}
               </Button>
             </form>
           </Card>

@@ -72,8 +72,8 @@ model OrderItem {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   order     Order    @relation(fields: [orderId], references: [id])
   orderId   String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String   @db.ObjectId
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?  @db.ObjectId
   quantity  Int
   size      String
   price     Float
@@ -168,8 +168,8 @@ model CartItem {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   cartId    String   @db.ObjectId
   cart      Cart     @relation(fields: [cartId], references: [id])
-  productId String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id])
+  productId String?  @db.ObjectId
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   size      String
   quantity  Int
   createdAt DateTime @default(now())
